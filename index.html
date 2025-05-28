@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>ATOMICHAT - Seu Assistente na Química</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.85em%22 x=%2250%22 font-size=%2285%22 text-anchor=%22middle%22>🤖</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon">🤖</div>
+                    <div class="logo-text">AtomiChat</div>
+                </div>
+                <div class="header-buttons">
+                    <button class="btn new-chat-btn" id="newChatBtn">
+                        <i class="fas fa-plus"></i> Novo chat
+                    </button>
+                    <button class="btn-icon theme-toggle" 
+                        id="themeToggle" 
+                        data-tooltip="Mudar tema" 
+                        data-tooltip-position="top">
+                        <i class="fas fa-moon light-icon"></i>
+                        <i class="fas fa-sun dark-icon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="history-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-history"></i> Histórico</h3>
+                        <div class="clear-history-container">
+                            <button class="clear-history-btn" 
+                                data-tooltip="Limpar histórico" 
+                                data-tooltip-position="left">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-history-container">
+                        <ul class="chat-history" id="chatHistory">
+                            <li class="empty-history">
+                                <i class="fas fa-inbox"></i>
+                                <span>Nenhum histórico disponível</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <button class="btn periodic-table-btn" id="periodicTableBtn">
+                        <i class="fas fa-table"></i> Tabela Periódica
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-main" id="chatMain">
+            <div class="chat-main-initial">
+                <h1 class="chat-title">SEJA BEM-VINDO!</h1>
+                <p class="chat-subtitle">Qual elemento posso te ajudar a desvendar?</p>
+
+                <div class="input-container-center">
+                    <form id="chatForm">
+                        <div class="input-field">
+                            <textarea name="pergunta" id="perguntaInput" placeholder="Digite sua mensagem..." required rows="1"></textarea>
+                            <div class="input-actions">
+                                <button type="submit" class="btn send-button" id="submitBtn" data-tooltip="Enviar mensagem" data-tooltip-position="top" disabled>
+                                    <i class="fas fa-paper-plane send-icon"></i>
+                                    <div class="loading-square" style="display: none;"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="suggested-questions-container" id="suggestedQuestions">
+                    <div class="suggested-questions">
+                        <div class="suggested-question" onclick="document.getElementById('perguntaInput').value = 'Explique a organização da tabela periódica e suas principais características'; document.getElementById('perguntaInput').focus(); updateSendButtonState();">
+                            <div class="suggested-question-title"><i class="fas fa-table"></i> Tabela Periódica</div>
+                            <div class="suggested-question-desc">Explique a organização e características</div>
+                        </div>
+                        
+                        <div class="suggested-question" onclick="document.getElementById('perguntaInput').value = 'Quais são as propriedades do elemento Oxigênio?'; document.getElementById('perguntaInput').focus(); updateSendButtonState();">
+                            <div class="suggested-question-title"><i class="fas fa-atom"></i> Propriedades</div>
+                            <div class="suggested-question-desc">Pergunte sobre propriedades de elementos</div>
+                        </div>
+                        
+                        <div class="suggested-question" onclick="document.getElementById('perguntaInput').value = 'Qual a diferença entre metais, não-metais e gases nobres?'; document.getElementById('perguntaInput').focus(); updateSendButtonState();">
+                            <div class="suggested-question-title"><i class="fas fa-vial"></i> Classificação</div>
+                            <div class="suggested-question-desc">Diferenças entre classes de elementos</div>
+                        </div>
+                        
+                        <div class="suggested-question" onclick="document.getElementById('perguntaInput').value = 'Explique a configuração eletrônica do elemento Ferro'; document.getElementById('perguntaInput').focus(); updateSendButtonState();">
+                            <div class="suggested-question-title"><i class="fas fa-microscope"></i> Configuração</div>
+                            <div class="suggested-question-desc">Configuração eletrônica de elementos</div>
+                        </div>
+                    </div>
+                    <div class="input-footer" id="initialDisclaimer" style="display: none;">
+                        <span class="disclaimer">Gerado por IA, apenas para referência</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-messages-container">
+                <div class="chat-messages" id="chatMessages"></div>
+            </div>
+
+            <div class="periodic-table-container" id="periodicTableContainer" style="display: none;">
+                <div class="periodic-table-wrapper">
+                    <h1>TABELA PERIÓDICA</h1>
+                    
+                    <div class="tables-container">
+                        <div class="periodic-table" id="periodic-table"></div>
+                        
+                        <div class="lanthanides-actinides" id="lanthanides-actinides"></div>
+                    </div>
+                    
+                    <div class="element-details" id="element-details">
+                        <h2 id="detail-title">Elemento</h2>
+                        <div class="detail-row">
+                            <div class="detail-label">Número Atômico:</div>
+                            <div class="detail-value" id="detail-number"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Símbolo:</div>
+                            <div class="detail-value" id="detail-symbol"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Nome:</div>
+                            <div class="detail-value" id="detail-name"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Massa Atômica:</div>
+                            <div class="detail-value" id="detail-mass"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Categoria:</div>
+                            <div class="detail-value" id="detail-category"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Estado em 25°C:</div>
+                            <div class="detail-value" id="detail-state"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Descoberta:</div>
+                            <div class="detail-value" id="detail-discovery"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Config. Eletrônica:</div>
+                            <div class="detail-value" id="detail-electron"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Descrição:</div>
+                            <div class="detail-value" id="detail-description"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container-center normal-position" id="mainInputContainer">
+                <form id="chatFormBottom">
+                    <div class="input-field">
+                        <textarea name="pergunta" id="perguntaInputBottom" placeholder="Digite sua mensagem..." required rows="1"></textarea>
+                        <div class="input-actions">
+                            <button type="submit" class="btn send-button" id="submitBtnBottom" data-tooltip="Enviar mensagem" data-tooltip-position="top" disabled>
+                                <i class="fas fa-paper-plane send-icon"></i>
+                                <div class="loading-square" style="display: none;"></div>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div class="input-footer">
+                    <span class="disclaimer">Gerado por IA, apenas para referência</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

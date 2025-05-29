@@ -2,12 +2,11 @@
 <html lang="pt-br">
 <head>
     <title>ATOMICHAT - Seu Assistente na Química</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.85em%22 x=%2250%22 font-size=%2285%22 text-anchor=%22middle%22>🤖</text></svg>">
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="script.js" defer></script>
 </head>
 <body>
     <div class="app-container">
@@ -21,13 +20,6 @@
                     <button class="btn new-chat-btn" id="newChatBtn">
                         <i class="fas fa-plus"></i> Novo chat
                     </button>
-                    <button class="btn-icon theme-toggle" 
-                        id="themeToggle" 
-                        data-tooltip="Mudar tema" 
-                        data-tooltip-position="top">
-                        <i class="fas fa-moon light-icon"></i>
-                        <i class="fas fa-sun dark-icon"></i>
-                    </button>
                 </div>
             </div>
 
@@ -36,9 +28,7 @@
                     <div class="section-header">
                         <h3><i class="fas fa-history"></i> Histórico</h3>
                         <div class="clear-history-container">
-                            <button class="clear-history-btn" 
-                                data-tooltip="Limpar histórico" 
-                                data-tooltip-position="left">
+                            <button class="clear-history-btn">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
@@ -68,13 +58,13 @@
                 <p class="chat-subtitle">Qual elemento posso te ajudar a desvendar?</p>
 
                 <div class="input-container-center">
-                    <form id="chatForm">
+                    <form method="POST" id="chatForm">
                         <div class="input-field">
                             <textarea name="pergunta" id="perguntaInput" placeholder="Digite sua mensagem..." required rows="1"></textarea>
                             <div class="input-actions">
-                                <button type="submit" class="btn send-button" id="submitBtn" data-tooltip="Enviar mensagem" data-tooltip-position="top" disabled>
+                                <button type="submit" class="btn send-button" id="submitBtn" disabled>
                                     <i class="fas fa-paper-plane send-icon"></i>
-                                    <div class="loading-square" style="display: none;"></div>
+                                    <div class="loading-square"></div>
                                 </button>
                             </div>
                         </div>
@@ -103,9 +93,6 @@
                             <div class="suggested-question-desc">Configuração eletrônica de elementos</div>
                         </div>
                     </div>
-                    <div class="input-footer" id="initialDisclaimer" style="display: none;">
-                        <span class="disclaimer">Gerado por IA, apenas para referência</span>
-                    </div>
                 </div>
             </div>
 
@@ -113,75 +100,583 @@
                 <div class="chat-messages" id="chatMessages"></div>
             </div>
 
-            <div class="periodic-table-container" id="periodicTableContainer" style="display: none;">
-                <div class="periodic-table-wrapper">
-                    <h1>TABELA PERIÓDICA</h1>
-                    
-                    <div class="tables-container">
-                        <div class="periodic-table" id="periodic-table"></div>
-                        
-                        <div class="lanthanides-actinides" id="lanthanides-actinides"></div>
-                    </div>
-                    
-                    <div class="element-details" id="element-details">
-                        <h2 id="detail-title">Elemento</h2>
-                        <div class="detail-row">
-                            <div class="detail-label">Número Atômico:</div>
-                            <div class="detail-value" id="detail-number"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Símbolo:</div>
-                            <div class="detail-value" id="detail-symbol"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Nome:</div>
-                            <div class="detail-value" id="detail-name"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Massa Atômica:</div>
-                            <div class="detail-value" id="detail-mass"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Categoria:</div>
-                            <div class="detail-value" id="detail-category"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Estado em 25°C:</div>
-                            <div class="detail-value" id="detail-state"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Descoberta:</div>
-                            <div class="detail-value" id="detail-discovery"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Config. Eletrônica:</div>
-                            <div class="detail-value" id="detail-electron"></div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Descrição:</div>
-                            <div class="detail-value" id="detail-description"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="input-container-center normal-position" id="mainInputContainer">
-                <form id="chatFormBottom">
+                <form method="POST" id="chatFormBottom">
                     <div class="input-field">
                         <textarea name="pergunta" id="perguntaInputBottom" placeholder="Digite sua mensagem..." required rows="1"></textarea>
                         <div class="input-actions">
-                            <button type="submit" class="btn send-button" id="submitBtnBottom" data-tooltip="Enviar mensagem" data-tooltip-position="top" disabled>
+                            <button type="submit" class="btn send-button" id="submitBtnBottom" disabled>
                                 <i class="fas fa-paper-plane send-icon"></i>
-                                <div class="loading-square" style="display: none;"></div>
+                                <div class="loading-square"></div>
                             </button>
                         </div>
                     </div>
                 </form>
-                <div class="input-footer">
-                    <span class="disclaimer">Gerado por IA, apenas para referência</span>
-                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        const OPENROUTER_API_KEY = "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";
+        const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+        const MODEL_NAME = "deepseek/deepseek-chat";
+        
+        let currentChatId = null;
+        let chatHistory = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChatsFromLocalStorage();
+            setupEventListeners();
+            updateSendButtonState();
+        });
+
+        function setupEventListeners() {
+            setupFormSubmit('chatForm', 'perguntaInput', 'submitBtn');
+            setupFormSubmit('chatFormBottom', 'perguntaInputBottom', 'submitBtnBottom');
+            
+            document.getElementById('newChatBtn').addEventListener('click', createNewChat);
+            document.querySelector('.clear-history-btn').addEventListener('click', clearAllChats);
+            document.getElementById('periodicTableBtn').addEventListener('click', redirectToPeriodicTable);
+            
+            document.getElementById('perguntaInput').addEventListener('input', updateSendButtonState);
+            document.getElementById('perguntaInputBottom').addEventListener('input', updateSendButtonState);
+            
+            document.addEventListener('keydown', handleKeyboardShortcuts);
+        }
+        
+        function redirectToPeriodicTable() {
+            window.location.href = "tabela-periodica.html";
+        }
+        
+        function setupFormSubmit(formId, inputId, btnId) {
+            const form = document.getElementById(formId);
+            const input = document.getElementById(inputId);
+            
+            input.addEventListener('input', function() {
+                adjustTextareaHeight(input);
+                updateSendButtonState();
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey && input.value.trim().length > 0) {
+                    e.preventDefault();
+                    form.dispatchEvent(new Event('submit'));
+                }
+                adjustTextareaHeight(input);
+            });
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const message = input.value.trim();
+                if (!message) return;
+                
+                sendMessage(message);
+                input.value = '';
+                adjustTextareaHeight(input);
+            });
+        }
+        
+        async function sendMessage(message) {
+            addMessage(message, true);
+            showChatInterface();
+            
+            const loadingElement = showLoadingIndicator();
+            setSendButtonsState(true);
+            
+            try {
+                const response = await generateAIResponse(message);
+                addMessage(response, false);
+                updateChatHistory(message, response);
+            } catch (error) {
+                console.error("Erro:", error);
+                addMessage("Desculpe, ocorreu um erro ao processar sua mensagem: " + error.message, false);
+            } finally {
+                setSendButtonsState(false);
+                hideLoadingIndicator(loadingElement);
+            }
+        }
+        
+        async function generateAIResponse(message) {
+            const contexto = buscarContexto(message);
+            
+            const prompt = {
+                "model": MODEL_NAME,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": `Aja como um professor de química experiente que ensina alunos do ensino médio. 
+                        Sua linguagem deve ser didática, clara e com um tom descontraído de sala de aula, mas sem 
+                        infantilizar o conteúdo. Você DEVE seguir esta estrutura ao responder: Explique o conceito 
+                        químico de forma objetiva, acessível e bem fundamentada. Use um exemplo do cotidiano ou uma 
+                        analogia compatível com o nível do ensino médio para tornar o conteúdo mais fácil de visualizar. 
+                        Inclua uma pergunta simples no final da explicação para checar se o aluno compreendeu. Sua missão 
+                        é responder qualquer pergunta que eu fizer sobre a Tabela Periódica ou temas relacionados de 
+                        química (como propriedades dos elementos, ligações químicas, estrutura atômica etc.). Adote um tom 
+                        acolhedor, incentive o raciocínio do aluno, e estimule a curiosidade científica.`
+                    },
+                    {
+                        "role": "user",
+                        "content": `Pergunta: ${message}\nContexto: ${contexto}`
+                    }
+                ],
+                "temperature": 0.7,
+                "max_tokens": 500
+            };
+            
+            const headers = {
+                "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": window.location.href,
+                "X-Title": "AtomiChat"
+            };
+            
+            const response = await fetch(OPENROUTER_API_URL, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(prompt)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || 'Erro ao gerar resposta');
+            }
+            
+            const data = await response.json();
+            return limparTextoDefinitivo(data.choices[0].message.content);
+        }
+        
+        function buscarContexto(pergunta) {
+            const palavrasChave = pergunta.toLowerCase().split(' ').filter(p => p.length > 3);
+            
+            if (palavrasChave.some(p => p.includes('tabela') || p.includes('periódica'))) {
+                return "A tabela periódica organiza os elementos químicos em ordem crescente de número atômico. Ela está dividida em grupos (colunas) e períodos (linhas). Os elementos são classificados como metais, não-metais e semimetais, com propriedades periódicas como raio atômico, energia de ionização e eletronegatividade variando de forma previsível.";
+            }
+            
+            if (palavrasChave.some(p => p.includes('oxigênio'))) {
+                return "O oxigênio (O) é um elemento do grupo 16 (calcogênios) com número atômico 8. É um não-metal altamente reativo que forma facilmente compostos com quase todos os outros elementos. Na forma de O2, é essencial para a respiração celular. Também forma o ozônio (O3) na atmosfera superior.";
+            }
+            
+            if (palavrasChave.some(p => p.includes('ferro') || p.includes('configuração'))) {
+                return "O ferro (Fe) é um metal de transição com número atômico 26. Sua configuração eletrônica é [Ar] 3d6 4s2. É essencial para a produção de hemoglobina e importante na indústria como componente principal do aço.";
+            }
+            
+            return "Contexto geral sobre química: A química estuda a matéria, suas propriedades, composição e transformações. A tabela periódica organiza os elementos conhecidos de acordo com suas propriedades periódicas. As ligações químicas (iônicas, covalentes e metálicas) explicam como os átomos se unem para formar compostos.";
+        }
+        
+        function limparTextoDefinitivo(texto) {
+            if (!texto) return texto;
+            
+            texto = texto.replace(/^[\s\u200B-\u200D\uFEFF]+|[\s\u200B-\u200D\uFEFF]+$/g, '')
+                         .replace(/[ \t]+/g, ' ')
+                         .replace(/\n\s+/g, '\n');
+            
+            return texto.trim();
+        }
+        
+        function addMessage(text, isUser) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageContainer = document.createElement('div');
+            messageContainer.className = `message-container ${isUser ? 'user-message-container' : 'bot-message-container'}`;
+            
+            if (!isUser) {
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = 'message-avatar bot-message-avatar';
+                avatarDiv.innerHTML = '<div class="avatar-circle"><i class="fas fa-robot"></i></div>';
+                messageContainer.appendChild(avatarDiv);
+            }
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = `message-content ${isUser ? 'user-message-content' : 'bot-message-content'}`;
+            messageContent.innerHTML = renderMarkdown(text, isUser);
+            
+            messageContainer.appendChild(messageContent);
+            chatMessages.appendChild(messageContainer);
+            
+            setTimeout(() => {
+                messageContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 50);
+        }
+        
+        function renderMarkdown(text, isUserMessage = false) {
+            if (!text) return '';
+            
+            let cleanedText = text
+                .replace(/^[\s\u200B-\u200D\uFEFF]+/, '')
+                .replace(/[\s\u200B-\u200D\uFEFF]+$/, '')
+                .replace(/[ \t]+/g, ' ')
+                .replace(/\n\s+/g, '\n');
+            
+            if (isUserMessage) {
+                return cleanedText.replace(/\n/g, '<br>');
+            }
+            
+            const paragraphs = cleanedText.split('\n\n');
+            let firstParagraph = paragraphs[0].trim();
+            let restOfText = paragraphs.slice(1).join('\n\n');
+            let renderedRest = marked.parse(restOfText || '');
+            
+            let result = `<p class="md-paragraph">${firstParagraph}</p>`;
+            if (renderedRest.trim().length > 0) {
+                result += renderedRest;
+            }
+            
+            return result
+                .replace(/<ul>/g, '<ul class="md-list">')
+                .replace(/<ol>/g, '<ol class="md-list">')
+                .replace(/<li>/g, '<li class="md-list-item">')
+                .replace(/<code>/g, '<code class="md-code">')
+                .replace(/<pre>/g, '<pre class="md-pre">')
+                .replace(/<blockquote>/g, '<blockquote class="md-quote">')
+                .replace(/<h1>/g, '<h1 class="md-heading h1">')
+                .replace(/<h2>/g, '<h2 class="md-heading h2">')
+                .replace(/<h3>/g, '<h3 class="md-heading h3">')
+                .replace(/<strong>/g, '<strong class="md-strong">')
+                .replace(/<em>/g, '<em class="md-em">')
+                .replace(/<a /g, '<a class="md-link" ');
+        }
+        
+        function showLoadingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-message';
+            loadingDiv.innerHTML = `
+                <div class="loading-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Pensando...</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(loadingDiv);
+            loadingDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            
+            return loadingDiv;
+        }
+        
+        function hideLoadingIndicator(loadingElement) {
+            if (loadingElement && loadingElement.parentNode) {
+                loadingElement.parentNode.removeChild(loadingElement);
+            }
+        }
+        
+        function showChatInterface() {
+            const chatMain = document.getElementById('chatMain');
+            chatMain.classList.add('has-messages');
+            document.getElementById('mainInputContainer').style.display = 'block';
+        }
+        
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            const newHeight = Math.min(textarea.scrollHeight, 150);
+            textarea.style.height = newHeight + 'px';
+            textarea.style.overflowY = newHeight >= 150 ? 'auto' : 'hidden';
+            
+            const suggestedQuestions = document.getElementById('suggestedQuestions');
+            const initialDisclaimer = document.getElementById('initialDisclaimer');
+            
+            if (textarea.value.trim().length > 0) {
+                suggestedQuestions.querySelector('.suggested-questions').style.display = 'none';
+                initialDisclaimer.style.display = 'block';
+            } else {
+                suggestedQuestions.querySelector('.suggested-questions').style.display = 'grid';
+                initialDisclaimer.style.display = 'none';
+            }
+        }
+        
+        function updateSendButtonState() {
+            const input1 = document.getElementById('perguntaInput');
+            const input2 = document.getElementById('perguntaInputBottom');
+            const btn1 = document.getElementById('submitBtn');
+            const btn2 = document.getElementById('submitBtnBottom');
+            
+            btn1.disabled = !input1.value.trim();
+            btn2.disabled = !input2.value.trim();
+        }
+        
+        function setSendButtonsState(isLoading) {
+            const submitBtns = [document.getElementById('submitBtn'), document.getElementById('submitBtnBottom')];
+            submitBtns.forEach(btn => {
+                btn.disabled = isLoading;
+                btn.classList.toggle('loading', isLoading);
+                btn.querySelector('.send-icon').style.display = isLoading ? 'none' : 'block';
+                btn.querySelector('.loading-square').style.display = isLoading ? 'block' : 'none';
+            });
+        }
+        
+        function updateChatHistory(pergunta, resposta) {
+            const isNewChat = !currentChatId;
+            
+            if (isNewChat) {
+                currentChatId = `chat_${Date.now()}`;
+                chatHistory[currentChatId] = {
+                    messages: [],
+                    title: criarTituloChat(pergunta),
+                    timestamp: Date.now()
+                };
+            }
+            
+            chatHistory[currentChatId].messages.push(
+                { content: pergunta, is_user: true },
+                { content: resposta, is_user: false }
+            );
+            chatHistory[currentChatId].timestamp = Date.now();
+            
+            saveChatsToLocalStorage();
+            
+            if (isNewChat) {
+                updateSidebar(currentChatId, pergunta);
+            }
+        }
+        
+        function criarTituloChat(pergunta) {
+            const palavras = pergunta.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+                .split(' ')
+                .filter(palavra => palavra.length > 3);
+            
+            const titulo = palavras.slice(0, 5).join(' ');
+            
+            return titulo || "Conversa sobre química";
+        }
+        
+        function updateSidebar(chatId, firstMessage) {
+            const chatHistory = document.getElementById('chatHistory');
+            
+            document.querySelectorAll('#chatHistory li').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const emptyHistory = chatHistory.querySelector('.empty-history');
+            if (emptyHistory) {
+                emptyHistory.remove();
+            }
+            
+            const existingChat = chatHistory.querySelector(`.chat-link[data-chat-id="${chatId}"]`);
+            if (existingChat) {
+                existingChat.closest('li').classList.add('active');
+                return;
+            }
+            
+            const chatTitle = criarTituloChat(firstMessage);
+            
+            const newChatItem = document.createElement('li');
+            newChatItem.className = 'active';
+            newChatItem.innerHTML = `
+                <div class="chat-item">
+                    <i class="fas fa-comment-dots chat-icon"></i>
+                    <span class="chat-link" data-chat-id="${chatId}" title="${chatTitle}">
+                        ${chatTitle}
+                    </span>
+                    <div class="chat-actions">
+                        <button class="chat-action-btn delete" data-chat-id="${chatId}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            chatHistory.insertBefore(newChatItem, chatHistory.firstChild);
+            setupChatItemEvents(newChatItem);
+        }
+        
+        function setupChatItemEvents(chatItem) {
+            const chatLink = chatItem.querySelector('.chat-link');
+            chatLink.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const chatId = this.getAttribute('data-chat-id');
+                switchToChat(chatId);
+            });
+            
+            chatItem.addEventListener('click', function(e) {
+                if (!e.target.closest('.chat-link') && !e.target.closest('.chat-actions')) {
+                    const chatId = chatItem.querySelector('.chat-link').getAttribute('data-chat-id');
+                    switchToChat(chatId);
+                }
+            });
+            
+            chatItem.querySelector('.chat-action-btn.delete').addEventListener('click', async function(e) {
+                e.stopPropagation();
+                const chatId = this.getAttribute('data-chat-id');
+                await deleteChat(chatId);
+            });
+        }
+        
+        function switchToChat(chatId) {
+            if (!chatHistory[chatId]) return;
+            
+            currentChatId = chatId;
+            document.getElementById('chatMessages').innerHTML = '';
+            
+            chatHistory[chatId].messages.forEach(msg => {
+                addMessage(msg.content, msg.is_user);
+            });
+            
+            document.querySelectorAll('#chatHistory li').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const activeItem = document.querySelector(`.chat-link[data-chat-id="${chatId}"]`)?.closest('li');
+            if (activeItem) {
+                activeItem.classList.add('active');
+            }
+            
+            showChatInterface();
+        }
+        
+        async function deleteChat(chatId) {
+            const { isConfirmed } = await Swal.fire({
+                title: 'Deletar chat?',
+                text: "Esta ação não pode ser desfeita!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, deletar!',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#ff3b30',
+                focusCancel: true
+            });
+            
+            if (!isConfirmed) return;
+            
+            delete chatHistory[chatId];
+            saveChatsToLocalStorage();
+            
+            if (currentChatId === chatId) {
+                currentChatId = null;
+                document.getElementById('chatMessages').innerHTML = '';
+                document.getElementById('chatMain').classList.remove('has-messages');
+                document.getElementById('mainInputContainer').style.display = 'none';
+            }
+            
+            const chatItem = document.querySelector(`.chat-link[data-chat-id="${chatId}"]`)?.closest('li');
+            if (chatItem) {
+                chatItem.remove();
+            }
+            
+            const chatHistoryElement = document.getElementById('chatHistory');
+            if (chatHistoryElement.querySelectorAll('li').length === 0) {
+                const emptyItem = document.createElement('li');
+                emptyItem.className = 'empty-history';
+                emptyItem.innerHTML = `
+                    <i class="fas fa-inbox"></i>
+                    <span>Nenhum histórico disponível</span>
+                `;
+                chatHistoryElement.appendChild(emptyItem);
+            }
+        }
+        
+        function createNewChat() {
+            currentChatId = null;
+            document.getElementById('chatMessages').innerHTML = '';
+            document.getElementById('chatMain').classList.remove('has-messages');
+            document.getElementById('mainInputContainer').style.display = 'none';
+            document.getElementById('perguntaInput').focus();
+        }
+        
+        async function clearAllChats() {
+            const { isConfirmed } = await Swal.fire({
+                title: 'Limpar todo o histórico?',
+                text: "Esta ação removerá todos os seus chats!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Limpar tudo',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#ff3b30',
+                focusCancel: true
+            });
+            
+            if (!isConfirmed) return;
+            
+            chatHistory = {};
+            currentChatId = null;
+            localStorage.removeItem('atomichat_history');
+            
+            document.getElementById('chatHistory').innerHTML = `
+                <li class="empty-history">
+                    <i class="fas fa-inbox"></i>
+                    <span>Nenhum histórico disponível</span>
+                </li>
+            `;
+            
+            document.getElementById('chatMessages').innerHTML = '';
+            document.getElementById('chatMain').classList.remove('has-messages');
+            document.getElementById('mainInputContainer').style.display = 'none';
+            
+            Swal.fire({
+                title: 'Histórico limpo!',
+                text: 'Todos os chats foram removidos.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+        
+        function saveChatsToLocalStorage() {
+            localStorage.setItem('atomichat_history', JSON.stringify(chatHistory));
+        }
+        
+        function loadChatsFromLocalStorage() {
+            const savedChats = localStorage.getItem('atomichat_history');
+            if (savedChats) {
+                chatHistory = JSON.parse(savedChats);
+                
+                const chatHistoryElement = document.getElementById('chatHistory');
+                chatHistoryElement.innerHTML = '';
+                
+                if (Object.keys(chatHistory).length === 0) {
+                    chatHistoryElement.innerHTML = `
+                        <li class="empty-history">
+                            <i class="fas fa-inbox"></i>
+                            <span>Nenhum histórico disponível</span>
+                        </li>
+                    `;
+                    return;
+                }
+                
+                const sortedChats = Object.entries(chatHistory).sort((a, b) => b[1].timestamp - a[1].timestamp);
+                
+                sortedChats.forEach(([chatId, chatData]) => {
+                    const chatItem = document.createElement('li');
+                    chatItem.className = chatId === currentChatId ? 'active' : '';
+                    chatItem.innerHTML = `
+                        <div class="chat-item">
+                            <i class="fas fa-comment-dots chat-icon"></i>
+                            <span class="chat-link" data-chat-id="${chatId}" title="${chatData.title}">
+                                ${chatData.title}
+                            </span>
+                            <div class="chat-actions">
+                                <button class="chat-action-btn delete" data-chat-id="${chatId}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatHistoryElement.appendChild(chatItem);
+                    setupChatItemEvents(chatItem);
+                });
+            }
+        }
+        
+        function handleKeyboardShortcuts(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const activeForm = document.getElementById('chatMain').classList.contains('has-messages') 
+                    ? document.getElementById('chatFormBottom') 
+                    : document.getElementById('chatForm');
+                if (activeForm) {
+                    const input = activeForm.querySelector('textarea');
+                    if (input.value.trim().length > 0) {
+                        activeForm.dispatchEvent(new Event('submit'));
+                    }
+                }
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                createNewChat();
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela Periódica - ATOMICHAT</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="tabela-titulo">Tabela Periódica</h1>
+        
+        <div id="periodic-table-container">
+            <div id="periodic-table"></div>
+            <div id="lanthanides-actinides"></div>
+        </div>
+        
+        <div id="element-details">
+            <h2 id="detail-title">Elemento</h2>
+            <div class="detail-row">
+                <span class="detail-label">Número Atômico:</span>
+                <span class="detail-value" id="detail-number"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Símbolo:</span>
+                <span class="detail-value" id="detail-symbol"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Nome:</span>
+                <span class="detail-value" id="detail-name"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Massa Atômica:</span>
+                <span class="detail-value" id="detail-mass"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Categoria:</span>
+                <span class="detail-value" id="detail-category"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Estado (25°C):</span>
+                <span class="detail-value" id="detail-state"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Descoberto em:</span>
+                <span class="detail-value" id="detail-discovery"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Config. Eletrônica:</span>
+                <span class="detail-value" id="detail-electron"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Descrição:</span>
+                <span class="detail-value" id="detail-description"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de navegação -->
+    <div class="navigation-buttons">
+        <button class="nav-button back" onclick="window.location.href='index.html'">⇦</button>
+        <button class="nav-button play">▶ Jogar</button>
+    </div>
+
+    <script>
+        // Dados dos elementos
+        const elements = [
+            { number: 1, symbol: "H", name: "Hidrogênio", mass: 1.008, category: "nonmetal", state: "gas", discovery: "1766", electron: "1s¹", description: "O elemento mais leve e abundante no universo." },
+            { number: 2, symbol: "He", name: "Hélio", mass: 4.0026, category: "noble-gas", state: "gas", discovery: "1868", electron: "1s²", description: "Gás nobre usado em balões e ressonância magnética." },
+            { number: 3, symbol: "Li", name: "Lítio", mass: 6.94, category: "alkali-metal", state: "solid", discovery: "1817", electron: "[He] 2s¹", description: "Metal alcalino leve usado em baterias." },
+            { number: 4, symbol: "Be", name: "Berílio", mass: 9.0122, category: "alkaline-earth", state: "solid", discovery: "1798", electron: "[He] 2s²", description: "Metal alcalino-terroso usado em ligas avançadas." },
+            { number: 5, symbol: "B", name: "Boro", mass: 10.81, category: "metalloid", state: "solid", discovery: "1808", electron: "[He] 2s² 2p¹", description: "Semimetal usado em fibra de vidro e semicondutores." },
+            { number: 6, symbol: "C", name: "Carbono", mass: 12.011, category: "nonmetal", state: "solid", discovery: "Antiguidade", electron: "[He] 2s² 2p²", description: "Base de toda a vida orgânica na Terra." },
+            { number: 7, symbol: "N", name: "Nitrogênio", mass: 14.007, category: "nonmetal", state: "gas", discovery: "1772", electron: "[He] 2s² 2p³", description: "Gás que compõe 78% da atmosfera terrestre." },
+            { number: 8, symbol: "O", name: "Oxigênio", mass: 15.999, category: "nonmetal", state: "gas", discovery: "1774", electron: "[He] 2s² 2p⁴", description: "Gás essencial para a respiração e combustão." },
+            { number: 9, symbol: "F", name: "Flúor", mass: 18.998, category: "halogen", state: "gas", discovery: "1886", electron: "[He] 2s² 2p⁵", description: "O elemento mais eletronegativo, usado em pastas de dente." },
+            { number: 10, symbol: "Ne", name: "Neônio", mass: 20.180, category: "noble-gas", state: "gas", discovery: "1898", electron: "[He] 2s² 2p⁶", description: "Gás nobre usado em sinais luminosos." },
+            { number: 11, symbol: "Na", name: "Sódio", mass: 22.990, category: "alkali-metal", state: "solid", discovery: "1807", electron: "[Ne] 3s¹", description: "Metal alcalino essencial para a vida animal." },
+            { number: 12, symbol: "Mg", name: "Magnésio", mass: 24.305, category: "alkaline-earth", state: "solid", discovery: "1755", electron: "[Ne] 3s²", description: "Metal alcalino-terroso usado em ligas leves." },
+            { number: 13, symbol: "Al", name: "Alumínio", mass: 26.982, category: "post-transition-metal", state: "solid", discovery: "1825", electron: "[Ne] 3s² 3p¹", description: "Metal leve amplamente usado em embalagens." },
+            { number: 14, symbol: "Si", name: "Silício", mass: 28.085, category: "metalloid", state: "solid", discovery: "1824", electron: "[Ne] 3s² 3p²", description: "Semimetal fundamental para a eletrônica moderna." },
+            { number: 15, symbol: "P", name: "Fósforo", mass: 30.974, category: "nonmetal", state: "solid", discovery: "1669", electron: "[Ne] 3s² 3p³", description: "Elemento essencial para o DNA e fertilizantes." },
+            { number: 16, symbol: "S", name: "Enxofre", mass: 32.06, category: "nonmetal", state: "solid", discovery: "Antiguidade", electron: "[Ne] 3s² 3p⁴", description: "Usado em pneus, fertilizantes e ácido sulfúrico." },
+            { number: 17, symbol: "Cl", name: "Cloro", mass: 35.45, category: "halogen", state: "gas", discovery: "1774", electron: "[Ne] 3s² 3p⁵", description: "Halogenio usado em purificação de água e PVC." },
+            { number: 18, symbol: "Ar", name: "Argônio", mass: 39.948, category: "noble-gas", state: "gas", discovery: "1894", electron: "[Ne] 3s² 3p⁶", description: "Gás nobre usado em lâmpadas e soldagem." },
+            { number: 19, symbol: "K", name: "Potássio", mass: 39.098, category: "alkali-metal", state: "solid", discovery: "1807", electron: "[Ar] 4s¹", description: "Metal alcalino essencial para a função nervosa." },
+            { number: 20, symbol: "Ca", name: "Cálcio", mass: 40.078, category: "alkaline-earth", state: "solid", discovery: "1808", electron: "[Ar] 4s²", description: "Essencial para ossos, dentes e contração muscular." },
+            { number: 21, symbol: "Sc", name: "Escândio", mass: 44.956, category: "transition-metal", state: "solid", discovery: "1879", electron: "[Ar] 3d¹ 4s²", description: "Metal de transição usado em luzes de alta intensidade." },
+            { number: 22, symbol: "Ti", name: "Titânio", mass: 47.867, category: "transition-metal", state: "solid", discovery: "1791", electron: "[Ar] 3d² 4s²", description: "Metal forte e leve usado em implantes médicos." },
+            { number: 23, symbol: "V", name: "Vanádio", mass: 50.942, category: "transition-metal", state: "solid", discovery: "1801", electron: "[Ar] 3d³ 4s²", description: "Usado em ligas de aço de alta resistência." },
+            { number: 24, symbol: "Cr", name: "Cromo", mass: 51.996, category: "transition-metal", state: "solid", discovery: "1797", electron: "[Ar] 3d⁵ 4s¹", description: "Usado em cromagem e aço inoxidável." },
+            { number: 25, symbol: "Mn", name: "Manganês", mass: 54.938, category: "transition-metal", state: "solid", discovery: "1774", electron: "[Ar] 3d⁵ 4s²", description: "Essencial para produção de aço e enzimas." },
+            { number: 26, symbol: "Fe", name: "Ferro", mass: 55.845, category: "transition-metal", state: "solid", discovery: "Antiguidade", electron: "[Ar] 3d⁶ 4s²", description: "Metal essencial para hemoglobina e construção." },
+            { number: 27, symbol: "Co", name: "Cobalto", mass: 58.933, category: "transition-metal", state: "solid", discovery: "1735", electron: "[Ar] 3d⁷ 4s²", description: "Usado em baterias recarregáveis e pigmentos." },
+            { number: 28, symbol: "Ni", name: "Níquel", mass: 58.693, category: "transition-metal", state: "solid", discovery: "1751", electron: "[Ar] 3d⁸ 4s²", description: "Usado em moedas e aço inoxidável." },
+            { number: 29, symbol: "Cu", name: "Cobre", mass: 63.546, category: "transition-metal", state: "solid", discovery: "Antiguidade", electron: "[Ar] 3d¹⁰ 4s¹", description: "Excelente condutor de eletricidade e calor." },
+            { number: 30, symbol: "Zn", name: "Zinco", mass: 65.38, category: "transition-metal", state: "solid", discovery: "1746", electron: "[Ar] 3d¹⁰ 4s²", description: "Usado em galvanização e ligas como latão." },
+            { number: 31, symbol: "Ga", name: "Gálio", mass: 69.723, category: "post-transition-metal", state: "solid", discovery: "1875", electron: "[Ar] 3d¹⁰ 4s² 4p¹", description: "Derrete na mão (29.8°C), usado em semicondutores." },
+            { number: 32, symbol: "Ge", name: "Germânio", mass: 72.630, category: "metalloid", state: "solid", discovery: "1886", electron: "[Ar] 3d¹⁰ 4s² 4p²", description: "Semimetal importante na eletrônica." },
+            { number: 33, symbol: "As", name: "Arsênio", mass: 74.922, category: "metalloid", state: "solid", discovery: "1250", electron: "[Ar] 3d¹⁰ 4s² 4p³", description: "Tóxico, mas usado em semicondutores." },
+            { number: 34, symbol: "Se", name: "Selênio", mass: 78.971, category: "nonmetal", state: "solid", discovery: "1817", electron: "[Ar] 3d¹⁰ 4s² 4p⁴", description: "Usado em fotocopiadoras e painéis solares." },
+            { number: 35, symbol: "Br", name: "Bromo", mass: 79.904, category: "halogen", state: "liquid", discovery: "1826", electron: "[Ar] 3d¹⁰ 4s² 4p⁵", description: "Único halogênio líquido à temperatura ambiente." },
+            { number: 36, symbol: "Kr", name: "Criptônio", mass: 83.798, category: "noble-gas", state: "gas", discovery: "1898", electron: "[Ar] 3d¹⁰ 4s² 4p⁶", description: "Gás nobre usado em lâmpadas fluorescentes." },
+            { number: 37, symbol: "Rb", name: "Rubídio", mass: 85.468, category: "alkali-metal", state: "solid", discovery: "1861", electron: "[Kr] 5s¹", description: "Metal alcalino usado em relógios atômicos." },
+            { number: 38, symbol: "Sr", name: "Estrôncio", mass: 87.62, category: "alkaline-earth", state: "solid", discovery: "1790", electron: "[Kr] 5s²", description: "Usado em fogos de artifício (cor vermelha)." },
+            { number: 39, symbol: "Y", name: "Ítrio", mass: 88.906, category: "transition-metal", state: "solid", discovery: "1794", electron: "[Kr] 4d¹ 5s²", description: "Usado em supercondutores e LEDs." },
+            { number: 40, symbol: "Zr", name: "Zircônio", mass: 91.224, category: "transition-metal", state: "solid", discovery: "1789", electron: "[Kr] 4d² 5s²", description: "Resistente à corrosão, usado em reatores nucleares." },
+            { number: 41, symbol: "Nb", name: "Nióbio", mass: 92.906, category: "transition-metal", state: "solid", discovery: "1801", electron: "[Kr] 4d⁴ 5s¹", description: "Usado em ligas de aço especiais." },
+            { number: 42, symbol: "Mo", name: "Molibdênio", mass: 95.95, category: "transition-metal", state: "solid", discovery: "1778", electron: "[Kr] 4d⁵ 5s¹", description: "Essencial para enzimas e ligas resistentes." },
+            { number: 43, symbol: "Tc", name: "Tecnécio", mass: 98, category: "transition-metal", state: "solid", discovery: "1937", electron: "[Kr] 4d⁵ 5s²", description: "Primeiro elemento artificialmente produzido." },
+            { number: 44, symbol: "Ru", name: "Rutênio", mass: 101.07, category: "transition-metal", state: "solid", discovery: "1844", electron: "[Kr] 4d⁷ 5s¹", description: "Usado em catalisadores e ligas resistentes." },
+            { number: 45, symbol: "Rh", name: "Ródio", mass: 102.91, category: "transition-metal", state: "solid", discovery: "1803", electron: "[Kr] 4d⁸ 5s¹", description: "Metal precioso usado em conversores catalíticos." },
+            { number: 46, symbol: "Pd", name: "Paládio", mass: 106.42, category: "transition-metal", state: "solid", discovery: "1803", electron: "[Kr] 4d¹⁰", description: "Usado em catalisadores e joalheria." },
+            { number: 47, symbol: "Ag", name: "Prata", mass: 107.87, category: "transition-metal", state: "solid", discovery: "Antiguidade", electron: "[Kr] 4d¹⁰ 5s¹", description: "Excelente condutor térmico e elétrico." },
+            { number: 48, symbol: "Cd", name: "Cádmio", mass: 112.41, category: "transition-metal", state: "solid", discovery: "1817", electron: "[Kr] 4d¹⁰ 5s²", description: "Usado em baterias níquel-cádmio (tóxico)." },
+            { number: 49, symbol: "In", name: "Índio", mass: 114.82, category: "post-transition-metal", state: "solid", discovery: "1863", electron: "[Kr] 4d¹⁰ 5s² 5p¹", description: "Usado em telas touchscreen e LEDs." },
+            { number: 50, symbol: "Sn", name: "Estanho", mass: 118.71, category: "post-transition-metal", state: "solid", discovery: "Antiguidade", electron: "[Kr] 4d¹⁰ 5s² 5p²", description: "Usado em soldas e latas de conserva." },
+            { number: 51, symbol: "Sb", name: "Antimônio", mass: 121.76, category: "metalloid", state: "solid", discovery: "Antiguidade", electron: "[Kr] 4d¹⁰ 5s² 5p³", description: "Usado em retardantes de chama e ligas." },
+            { number: 52, symbol: "Te", name: "Telúrio", mass: 127.60, category: "metalloid", state: "solid", discovery: "1782", electron: "[Kr] 4d¹⁰ 5s² 5p⁴", description: "Usado em painéis solares e ligas." },
+            { number: 53, symbol: "I", name: "Iodo", mass: 126.90, category: "halogen", state: "solid", discovery: "1811", electron: "[Kr] 4d¹⁰ 5s² 5p⁵", description: "Essencial para a tireoide, usado em desinfetantes." },
+            { number: 54, symbol: "Xe", name: "Xenônio", mass: 131.29, category: "noble-gas", state: "gas", discovery: "1898", electron: "[Kr] 4d¹⁰ 5s² 5p⁶", description: "Usado em lâmpadas e anestésicos." },
+            { number: 55, symbol: "Cs", name: "Césio", mass: 132.91, category: "alkali-metal", state: "solid", discovery: "1860", electron: "[Xe] 6s¹", description: "Usado em relógios atômicos (precisão extrema)." },
+            { number: 56, symbol: "Ba", name: "Bário", mass: 137.33, category: "alkaline-earth", state: "solid", discovery: "1808", electron: "[Xe] 6s²", description: "Usado em contrastes para raio-X." },
+            { number: 57, symbol: "La", name: "Lantânio", mass: 138.91, category: "lanthanide", state: "solid", discovery: "1839", electron: "[Xe] 5d¹ 6s²", description: "Primeiro dos lantanídeos, usado em baterias." },
+            { number: 58, symbol: "Ce", name: "Cério", mass: 140.12, category: "lanthanide", state: "solid", discovery: "1803", electron: "[Xe] 4f¹ 5d¹ 6s²", description: "Usado em catalisadores e ligas." },
+            { number: 59, symbol: "Pr", name: "Praseodímio", mass: 140.91, category: "lanthanide", state: "solid", discovery: "1885", electron: "[Xe] 4f³ 6s²", description: "Usado em ligas e vidros especiais." },
+            { number: 60, symbol: "Nd", name: "Neodímio", mass: 144.24, category: "lanthanide", state: "solid", discovery: "1885", electron: "[Xe] 4f⁴ 6s²", description: "Usado em ímãs poderosos." },
+            { number: 61, symbol: "Pm", name: "Promécio", mass: 145, category: "lanthanide", state: "solid", discovery: "1945", electron: "[Xe] 4f⁵ 6s²", description: "Elemento radioativo artificial." },
+            { number: 62, symbol: "Sm", name: "Samário", mass: 150.36, category: "lanthanide", state: "solid", discovery: "1879", electron: "[Xe] 4f⁶ 6s²", description: "Usado em ímãs e tratamento de câncer." },
+            { number: 63, symbol: "Eu", name: "Európio", mass: 151.96, category: "lanthanide", state: "solid", discovery: "1901", electron: "[Xe] 4f⁷ 6s²", description: "Usado em telas de TV e cédulas de euro." },
+            { number: 64, symbol: "Gd", name: "Gadolínio", mass: 157.25, category: "lanthanide", state: "solid", discovery: "1880", electron: "[Xe] 4f⁷ 5d¹ 6s²", description: "Usado em ressonância magnética." },
+            { number: 65, symbol: "Tb", name: "Térbio", mass: 158.93, category: "lanthanide", state: "solid", discovery: "1843", electron: "[Xe] 4f⁹ 6s²", description: "Usado em dispositivos de armazenamento." },
+            { number: 66, symbol: "Dy", name: "Disprósio", mass: 162.50, category: "lanthanide", state: "solid", discovery: "1886", electron: "[Xe] 4f¹⁰ 6s²", description: "Usado em ímãs e reatores nucleares." },
+            { number: 67, symbol: "Ho", name: "Hólmio", mass: 164.93, category: "lanthanide", state: "solid", discovery: "1878", electron: "[Xe] 4f¹¹ 6s²", description: "Tem as propriedades magnéticas mais fortes." },
+            { number: 68, symbol: "Er", name: "Érbio", mass: 167.26, category: "lanthanide", state: "solid", discovery: "1843", electron: "[Xe] 4f¹² 6s²", description: "Usado em fibras ópticas e lasers." },
+            { number: 69, symbol: "Tm", name: "Túlio", mass: 168.93, category: "lanthanide", state: "solid", discovery: "1879", electron: "[Xe] 4f¹³ 6s²", description: "O mais raro dos lantanídeos naturais." },
+            { number: 70, symbol: "Yb", name: "Itérbio", mass: 173.05, category: "lanthanide", state: "solid", discovery: "1878", electron: "[Xe] 4f¹⁴ 6s²", description: "Usado em relógios atômicos e aços." },
+            { number: 71, symbol: "Lu", name: "Lutécio", mass: 174.97, category: "lanthanide", state: "solid", discovery: "1907", electron: "[Xe] 4f¹⁴ 5d¹ 6s²", description: "Último dos lantanídeos, usado em catálise." },
+            { number: 72, symbol: "Hf", name: "Háfnio", mass: 178.49, category: "transition-metal", state: "solid", discovery: "1923", electron: "[Xe] 4f¹⁴ 5d² 6s²", description: "Usado em barras de controle nuclear." },
+            { number: 73, symbol: "Ta", name: "Tântalo", mass: 180.95, category: "transition-metal", state: "solid", discovery: "1802", electron: "[Xe] 4f¹⁴ 5d³ 6s²", description: "Resistente à corrosão, usado em eletrônicos." },
+            { number: 74, symbol: "W", name: "Tungstênio", mass: 183.84, category: "transition-metal", state: "solid", discovery: "1783", electron: "[Xe] 4f¹⁴ 5d⁴ 6s²", description: "Maior ponto de fusão de todos os metais." },
+            { number: 75, symbol: "Re", name: "Rênio", mass: 186.21, category: "transition-metal", state: "solid", discovery: "1925", electron: "[Xe] 4f¹⁴ 5d⁵ 6s²", description: "Um dos elementos mais raros na crosta terrestre." },
+            { number: 76, symbol: "Os", name: "Ósmio", mass: 190.23, category: "transition-metal", state: "solid", discovery: "1803", electron: "[Xe] 4f¹⁴ 5d⁶ 6s²", description: "Substância natural mais densa conhecida." },
+            { number: 77, symbol: "Ir", name: "Irídio", mass: 192.22, category: "transition-metal", state: "solid", discovery: "1803", electron: "[Xe] 4f¹⁴ 5d⁷ 6s²", description: "Um dos elementos mais resistentes à corrosão." },
+            { number: 78, symbol: "Pt", name: "Platina", mass: 195.08, category: "transition-metal", state: "solid", discovery: "1735", electron: "[Xe] 4f¹⁴ 5d⁹ 6s¹", description: "Metal precioso usado em catalisadores e joias." },
+            { number: 79, symbol: "Au", name: "Ouro", mass: 196.97, category: "transition-metal", state: "solid", discovery: "Antiguidade", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s¹", description: "Metal precioso usado em joias e eletrônicos." },
+            { number: 80, symbol: "Hg", name: "Mercúrio", mass: 200.59, category: "transition-metal", state: "liquid", discovery: "Antiguidade", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s²", description: "Único metal líquido à temperatura ambiente." },
+            { number: 81, symbol: "Tl", name: "Tálio", mass: 204.38, category: "post-transition-metal", state: "solid", discovery: "1861", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹", description: "Extremamente tóxico, usado em detectores infravermelhos." },
+            { number: 82, symbol: "Pb", name: "Chumbo", mass: 207.2, category: "post-transition-metal", state: "solid", discovery: "Antiguidade", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²", description: "Usado em baterias, mas tóxico para humanos." },
+            { number: 83, symbol: "Bi", name: "Bismuto", mass: 208.98, category: "post-transition-metal", state: "solid", discovery: "1753", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³", description: "O mais diamagnético de todos os metais." },
+            { number: 84, symbol: "Po", name: "Polônio", mass: 209, category: "post-transition-metal", state: "solid", discovery: "1898", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴", description: "Elemento altamente radioativo." },
+            { number: 85, symbol: "At", name: "Astato", mass: 210, category: "halogen", state: "solid", discovery: "1940", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵", description: "O halogênio mais raro e radioativo." },
+            { number: 86, symbol: "Rn", name: "Radônio", mass: 222, category: "noble-gas", state: "gas", discovery: "1900", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶", description: "Gás nobre radioativo, perigoso para a saúde." },
+            { number: 87, symbol: "Fr", name: "Frâncio", mass: 223, category: "alkali-metal", state: "solid", discovery: "1939", electron: "[Rn] 7s¹", description: "O metal alcalino mais instável e radioativo." },
+            { number: 88, symbol: "Ra", name: "Rádio", mass: 226, category: "alkaline-earth", state: "solid", discovery: "1898", electron: "[Rn] 7s²", description: "Famoso por sua radioatividade, usado antigamente em tintas." },
+            { number: 89, symbol: "Ac", name: "Actínio", mass: 227, category: "actinide", state: "solid", discovery: "1899", electron: "[Rn] 6d¹ 7s²", description: "Elemento radioativo que dá nome à série dos actinídeos." },
+            { number: 90, symbol: "Th", name: "Tório", mass: 232.04, category: "actinide", state: "solid", discovery: "1829", electron: "[Rn] 6d² 7s²", description: "Usado como combustível nuclear em reatores." },
+            { number: 91, symbol: "Pa", name: "Protactínio", mass: 231.04, category: "actinide", state: "solid", discovery: "1913", electron: "[Rn] 5f² 6d¹ 7s²", description: "Um dos elementos mais raros e caros." },
+            { number: 92, symbol: "U", name: "Urânio", mass: 238.03, category: "actinide", state: "solid", discovery: "1789", electron: "[Rn] 5f³ 6d¹ 7s²", description: "Combustível principal para energia nuclear." },
+            { number: 93, symbol: "Np", name: "Netúnio", mass: 237, category: "actinide", state: "solid", discovery: "1940", electron: "[Rn] 5f⁴ 6d¹ 7s²", description: "Primeiro elemento transurânico sintetizado." },
+            { number: 94, symbol: "Pu", name: "Plutônio", mass: 244, category: "actinide", state: "solid", discovery: "1940", electron: "[Rn] 5f⁶ 7s²", description: "Usado em armas nucleares e como combustível." },
+            { number: 95, symbol: "Am", name: "Amerício", mass: 243, category: "actinide", state: "solid", discovery: "1944", electron: "[Rn] 5f⁷ 7s²", description: "Usado em detectores de fumaça." },
+            { number: 96, symbol: "Cm", name: "Cúrio", mass: 247, category: "actinide", state: "solid", discovery: "1944", electron: "[Rn] 5f⁷ 6d¹ 7s²", description: "Homenagem a Marie e Pierre Curie." },
+            { number: 97, symbol: "Bk", name: "Berquélio", mass: 247, category: "actinide", state: "solid", discovery: "1949", electron: "[Rn] 5f⁹ 7s²", description: "Produzido em quantidades mínimas para pesquisa." },
+            { number: 98, symbol: "Cf", name: "Califórnio", mass: 251, category: "actinide", state: "solid", discovery: "1950", electron: "[Rn] 5f¹⁰ 7s²", description: "Um dos elementos mais caros, usado em medicina nuclear." },
+            { number: 99, symbol: "Es", name: "Einstênio", mass: 252, category: "actinide", state: "solid", discovery: "1952", electron: "[Rn] 5f¹¹ 7s²", description: "Homenagem a Albert Einstein." },
+            { number: 100, symbol: "Fm", name: "Férmio", mass: 257, category: "actinide", state: "solid", discovery: "1952", electron: "[Rn] 5f¹² 7s²", description: "Homenagem a Enrico Fermi." },
+            { number: 101, symbol: "Md", name: "Mendelévio", mass: 258, category: "actinide", state: "solid", discovery: "1955", electron: "[Rn] 5f¹³ 7s²", description: "Homenagem a Dmitri Mendeleev, criador da tabela periódica." },
+            { number: 102, symbol: "No", name: "Nobélio", mass: 259, category: "actinide", state: "solid", discovery: "1958", electron: "[Rn] 5f¹⁴ 7s²", description: "Homenagem a Alfred Nobel." },
+            { number: 103, symbol: "Lr", name: "Laurêncio", mass: 262, category: "actinide", state: "solid", discovery: "1961", electron: "[Rn] 5f¹⁴ 7s² 7p¹", description: "Homenagem a Ernest Lawrence, inventor do ciclotron." },
+            { number: 104, symbol: "Rf", name: "Rutherfórdio", mass: 267, category: "transition-metal", state: "solid", discovery: "1964", electron: "[Rn] 5f¹⁴ 6d² 7s²", description: "Homenagem a Ernest Rutherford." },
+            { number: 105, symbol: "Db", name: "Dúbnio", mass: 268, category: "transition-metal", state: "solid", discovery: "1967", electron: "[Rn] 5f¹⁴ 6d³ 7s²", description: "Homenagem ao Instituto Conjunto de Pesquisa Nuclear em Dubna, Rússia." },
+            { number: 106, symbol: "Sg", name: "Seabórgio", mass: 269, category: "transition-metal", state: "solid", discovery: "1974", electron: "[Rn] 5f¹⁴ 6d⁴ 7s²", description: "Homenagem a Glenn T. Seaborg." },
+            { number: 107, symbol: "Bh", name: "Bóhrio", mass: 270, category: "transition-metal", state: "solid", discovery: "1981", electron: "[Rn] 5f¹⁴ 6d⁵ 7s²", description: "Homenagem a Niels Bohr." },
+            { number: 108, symbol: "Hs", name: "Hássio", mass: 269, category: "transition-metal", state: "solid", discovery: "1984", electron: "[Rn] 5f¹⁴ 6d⁶ 7s²", description: "Homenagem ao estado alemão de Hesse." },
+            { number: 109, symbol: "Mt", name: "Meitnério", mass: 278, category: "transition-metal", state: "solid", discovery: "1982", electron: "[Rn] 5f¹⁴ 6d⁷ 7s²", description: "Homenagem a Lise Meitner." },
+            { number: 110, symbol: "Ds", name: "Darmstádio", mass: 281, category: "transition-metal", state: "solid", discovery: "1994", electron: "[Rn] 5f¹⁴ 6d⁹ 7s¹", description: "Homenagem à cidade de Darmstadt, Alemanha." },
+            { number: 111, symbol: "Rg", name: "Roentgênio", mass: 282, category: "transition-metal", state: "solid", discovery: "1994", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s¹", description: "Homenagem a Wilhelm Röntgen, descobridor dos raios X." },
+            { number: 112, symbol: "Cn", name: "Copernício", mass: 285, category: "transition-metal", state: "liquid", discovery: "1996", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s²", description: "Homenagem a Nicolau Copérnico." },
+            { number: 113, symbol: "Nh", name: "Nihônio", mass: 286, category: "post-transition-metal", state: "solid", discovery: "2004", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹", description: "Do japonês 'Nihon' (Japão), primeiro elemento descoberto na Ásia." },
+            { number: 114, symbol: "Fl", name: "Fleróvio", mass: 289, category: "post-transition-metal", state: "liquid", discovery: "1999", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²", description: "Homenagem a Georgy Flyorov, físico nuclear." },
+            { number: 115, symbol: "Mc", name: "Moscóvio", mass: 290, category: "post-transition-metal", state: "solid", discovery: "2004", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³", description: "Homenagem à região de Moscou." },
+            { number: 116, symbol: "Lv", name: "Livermório", mass: 293, category: "post-transition-metal", state: "solid", discovery: "2000", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴", description: "Homenagem ao Laboratório Nacional Lawrence Livermore." },
+            { number: 117, symbol: "Ts", name: "Tenesso", mass: 294, category: "halogen", state: "solid", discovery: "2010", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵", description: "Homenagem ao estado do Tennessee, EUA." },
+            { number: 118, symbol: "Og", name: "Oganessônio", mass: 294, category: "noble-gas", state: "gas", discovery: "2006", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶", description: "Homenagem a Yuri Oganessian, físico nuclear." }
+        ];
+
+        // Posições dos elementos na tabela periódica [linha, coluna]
+        const positions = {
+            // Período 1
+            1: [1, 2], 2: [1, 19],
+
+            // Período 2
+            3: [2, 2], 4: [2, 3],
+            5: [2, 14], 6: [2, 15], 7: [2, 16], 8: [2, 17], 9: [2, 18], 10: [2, 19],
+
+            // Período 3
+            11: [3, 2], 12: [3, 3],
+            13: [3, 14], 14: [3, 15], 15: [3, 16], 16: [3, 17], 17: [3, 18], 18: [3, 19],
+
+            // Período 4
+            19: [4, 2], 20: [4, 3],
+            21: [4, 4], 22: [4, 5], 23: [4, 6], 24: [4, 7], 25: [4, 8], 26: [4, 9], 27: [4, 10], 28: [4, 11], 29: [4, 12], 30: [4, 13],
+            31: [4, 14], 32: [4, 15], 33: [4, 16], 34: [4, 17], 35: [4, 18], 36: [4, 19],
+
+            // Período 5
+            37: [5, 2], 38: [5, 3],
+            39: [5, 4], 40: [5, 5], 41: [5, 6], 42: [5, 7], 43: [5, 8], 44: [5, 9], 45: [5, 10], 46: [5, 11], 47: [5, 12], 48: [5, 13],
+            49: [5, 14], 50: [5, 15], 51: [5, 16], 52: [5, 17], 53: [5, 18], 54: [5, 19],
+
+            // Período 6
+            55: [6, 2], 56: [6, 3],
+            72: [6, 5], 73: [6, 6], 74: [6, 7], 75: [6, 8], 76: [6, 9], 77: [6, 10], 78: [6, 11], 79: [6, 12], 80: [6, 13],
+            81: [6, 14], 82: [6, 15], 83: [6, 16], 84: [6, 17], 85: [6, 18], 86: [6, 19],
+
+            // Período 7
+            87: [7, 2], 88: [7, 3],
+            104: [7, 5], 105: [7, 6], 106: [7, 7], 107: [7, 8], 108: [7, 9], 109: [7, 10], 110: [7, 11], 111: [7, 12], 112: [7, 13],
+            113: [7, 14], 114: [7, 15], 115: [7, 16], 116: [7, 17], 117: [7, 18], 118: [7, 19]
+        };
+
+        // Lantanídeos e actinídeos
+        const lanthanides = [57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71];
+        const actinides = [89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103];
+
+        function createPeriodicTable() {
+            const table = document.getElementById('periodic-table');
+            table.innerHTML = '';
+            
+            // Adiciona números dos grupos (colunas)
+            for (let col = 1; col <= 18; col++) {
+                const groupNumber = document.createElement('div');
+                groupNumber.className = 'group-number';
+                groupNumber.textContent = col;
+                
+                // Define a posição vertical (row) baseada no grupo
+                let row = 1; // padrão (grupos 1 e 18)
+                
+                if (col >= 2 && col <= 12) {
+                    if (col === 2) {
+                        row = 2; // grupo 2 desce 1 período
+                    } else {
+                        row = 4; // grupos 3-12 descem 3 períodos
+                    }
+                } else if (col >= 13 && col <= 17) {
+                    row = 2; // grupos 13-17 descem 1 período
+                }
+                
+                groupNumber.style.gridRow = row.toString();
+                groupNumber.style.gridColumn = (col + 1).toString();
+                table.appendChild(groupNumber);
+            }
+            
+            // Adiciona números dos períodos (linhas)
+            for (let row = 1; row <= 7; row++) {
+                const periodNumber = document.createElement('div');
+                periodNumber.className = 'period-number';
+                periodNumber.style.gridColumn = '1';
+                periodNumber.style.gridRow = (row + 1).toString();
+                periodNumber.textContent = row;
+                table.appendChild(periodNumber);
+            }
+            
+            // Adiciona os elementos na tabela principal
+            elements.forEach(element => {
+                if (positions[element.number]) {
+                    const [row, col] = positions[element.number];
+                    const elementDiv = createElementDiv(element, row + 1, col); // +1 porque a primeira linha é para os números dos grupos
+                    table.appendChild(elementDiv);
+                }
+            });
+            
+            // Placeholder para Lantanídeos
+            const lanthanidePlaceholder = document.createElement('div');
+            lanthanidePlaceholder.className = 'series-placeholder';
+            lanthanidePlaceholder.style.gridRow = '7';
+            lanthanidePlaceholder.style.gridColumn = '4 / span 15';
+            lanthanidePlaceholder.textContent = 'Lantanídeos (57-71)';
+            table.appendChild(lanthanidePlaceholder);
+
+            // Placeholder para Actinídeos
+            const actinidePlaceholder = document.createElement('div');
+            actinidePlaceholder.className = 'series-placeholder';
+            actinidePlaceholder.style.gridRow = '8';
+            actinidePlaceholder.style.gridColumn = '4 / span 15';
+            actinidePlaceholder.textContent = 'Actinídeos (89-103)';
+            table.appendChild(actinidePlaceholder);
+        }
+
+        function createLanthanidesActinides() {
+            const container = document.getElementById('lanthanides-actinides');
+            container.innerHTML = '';
+            
+            // Filtra e ordena os lantanídeos
+            const lanthanideElements = elements.filter(e => lanthanides.includes(e.number))
+                                        .sort((a, b) => a.number - b.number);
+            
+            // Adiciona os lantanídeos
+            lanthanideElements.forEach((element, index) => {
+                const elementDiv = createElementDiv(element, 1, index + 1);
+                container.appendChild(elementDiv);
+            });
+            
+            // Filtra e ordena os actinídeos
+            const actinideElements = elements.filter(e => actinides.includes(e.number))
+                                      .sort((a, b) => a.number - b.number);
+            
+            // Adiciona os actinídeos
+            actinideElements.forEach((element, index) => {
+                const elementDiv = createElementDiv(element, 2, index + 1);
+                container.appendChild(elementDiv);
+            });
+        }
+
+        function createElementDiv(element, row, col) {
+            const elementDiv = document.createElement('div');
+            elementDiv.className = `element ${element.category} ${element.state}`;
+            elementDiv.style.gridRow = row;
+            elementDiv.style.gridColumn = col;
+            
+            elementDiv.innerHTML = `
+                <span class="number">${element.number}</span>
+                <span class="symbol">${element.symbol}</span>
+                <span class="name">${element.name}</span>
+            `;
+            
+            elementDiv.addEventListener('mouseenter', (e) => showElementDetails(element, e));
+            elementDiv.addEventListener('mouseleave', hideElementDetails);
+            elementDiv.addEventListener('click', () => showElementDetails(element, { target: elementDiv }));
+            
+            return elementDiv;
+        }
+
+        function showElementDetails(element, event) {
+            const details = document.getElementById('element-details');
+            document.getElementById('detail-title').textContent = `${element.name} (${element.symbol})`;
+            document.getElementById('detail-number').textContent = element.number;
+            document.getElementById('detail-symbol').textContent = element.symbol;
+            document.getElementById('detail-name').textContent = element.name;
+            document.getElementById('detail-mass').textContent = element.mass;
+            document.getElementById('detail-category').textContent = getCategoryName(element.category);
+            document.getElementById('detail-state').textContent = getStateName(element.state);
+            document.getElementById('detail-discovery').textContent = element.discovery;
+            document.getElementById('detail-electron').textContent = element.electron;
+            document.getElementById('detail-description').textContent = element.description;
+            
+            const elementRect = event.target.getBoundingClientRect();
+            const detailsWidth = 300;
+            const detailsHeight = 300;
+            
+            // Posiciona os detalhes ao lado do elemento, garantindo que não saia da tela
+            let left = elementRect.right + 10;
+            let top = elementRect.top;
+            
+            if (left + detailsWidth > window.innerWidth) {
+                left = elementRect.left - detailsWidth - 10;
+            }
+            
+            if (top + detailsHeight > window.innerHeight) {
+                top = window.innerHeight - detailsHeight - 10;
+            }
+            
+            details.style.left = `${left}px`;
+            details.style.top = `${top}px`;
+            details.style.display = 'block';
+        }
+
+        function hideElementDetails() {
+            document.getElementById('element-details').style.display = 'none';
+        }
+
+        function getCategoryName(category) {
+            const categories = {
+                'alkali-metal': 'Metal Alcalino',
+                'alkaline-earth': 'Metal Alcalino-Terroso',
+                'transition-metal': 'Metal de Transição',
+                'post-transition-metal': 'Metal Pós-Transição',
+                'metalloid': 'Semimetal',
+                'nonmetal': 'Não Metal',
+                'halogen': 'Halogênio',
+                'noble-gas': 'Gás Nobre',
+                'lanthanide': 'Lantanídeo',
+                'actinide': 'Actinídeo'
+            };
+            return categories[category] || category;
+        }
+
+        function getStateName(state) {
+            const states = {
+                'gas': 'Gasoso',
+                'solid': 'Sólido',
+                'liquid': 'Líquido'
+            };
+            return states[state] || state;
+        }
+
+        // Inicializa a tabela quando o DOM estiver carregado
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                createPeriodicTable();
+                createLanthanidesActinides();
+            } catch (error) {
+                console.error('Erro ao inicializar a tabela periódica:', error);
+                alert('Erro ao carregar a tabela periódica. Verifique o console para mais detalhes.');
+            }
+        });
+    </script>
+</body>
+</html>

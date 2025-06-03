@@ -1,0 +1,15 @@
+{
+    "Água": {
+        "formula": "H₂O",
+        "massa_molar": 18.015,
+        "estado_padrao": "Líquido",
+        "ponto_ebulicao": "100 °C",
+        "ponto_fusao": "0 °C"
+    },
+    "Dióxido de Carbono": {
+        "formula": "CO₂",
+        "massa_molar": 44.01,
+        "estado_padrao": "Gasoso",
+        "ponto_ebulicao": "-78.5 °C (sublima)"
+    }
+}

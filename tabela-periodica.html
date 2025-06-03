@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <title>ATOMICHAT - Assistente de Química</title>
+    <link rel="icon">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.85em%22 x=%2250%22 font-size=%2285%22 text-anchor=%22middle%22>⚛️</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <!-- Cabeçalho fixo com barra de pesquisa -->
+    <header class="header" id="mainHeader">
+        <div class="header-logo">
+            <div class="logo-robot">🤖</div>
+            <h1 class="logo">AtomiChat</h1>
+        </div>
+
+        <div class="header-search" id="headerSearch">
+            <form method="POST" id="chatForm" class="header-search-container">
+                <textarea name="pergunta" id="perguntaInput" placeholder="Digite sua pergunta sobre química..." required
+                    rows="1"></textarea>
+                <div class="search-history" id="searchHistory">
+                    <div class="search-history-empty" id="emptyHistory">Nenhum histórico de pesquisa</div>
+                    <div class="search-history-clear" id="clearHistory">Limpar histórico</div>
+                </div>
+            </form>
+        </div>
+
+        <button class="header-button" id="toggleViewBtn">▶ Jogar</button>
+    </header>
+
+    <!-- Barra de pesquisa que aparece na parte inferior após a primeira pergunta -->
+    <div class="search-bottom" id="bottomSearch">
+        <div class="new-chat-btn-container" id="newChatBtnContainer" style="display: none;">
+            <button class="new-chat-btn" id="newChatBtn">Novo Chat</button>
+        </div>
+        <div class="search-bottom-container">
+            <form method="POST" id="chatFormBottom" class="search-bottom-form">
+                <div class="input-field">
+                    <textarea name="pergunta" id="perguntaInputBottom"
+                        placeholder="Digite sua pergunta sobre química..." required rows="1"></textarea>
+                    <div class="input-actions">
+                        <button type="submit" class="search-bottom-button" id="submitBtnBottom">
+                            <i class="fas fa-paper-plane send-icon">➤</i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Área principal que alterna entre tabela periódica e chat -->
+    <div id="main-content">
+        <!-- Área da tabela periódica -->
+        <div id="periodic-table-container">
+            <div id="periodic-table">
+                <div id="enlarged-element-container" class="enlarged-element-container"></div>
+            </div>
+            <div id="lanthanides-actinides"></div>
+
+            <div id="element-details">
+                <h2 id="detail-title">Elemento</h2>
+                <div class="details-container">
+                    <div class="detail-column">
+                        <div class="detail-row">
+                            <span class="detail-label">Número Atômico:</span>
+                            <span class="detail-value" id="detail-number"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Símbolo:</span>
+                            <span class="detail-value" id="detail-symbol"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Massa Atômica:</span>
+                            <span class="detail-value" id="detail-mass"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Série:</span>
+                            <span class="detail-value" id="detail-category"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Estado Físico:</span>
+                            <span class="detail-value" id="detail-state"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Ponto de Fusão:</span>
+                            <span class="detail-value" id="detail-melting-point"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Ponto de Ebulição:</span>
+                            <span class="detail-value" id="detail-boiling-point"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Densidade:</span>
+                            <span class="detail-value" id="detail-density"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Config. Eletrônica:</span>
+                            <span class="detail-value" id="detail-electron"></span>
+                        </div>
+                    </div>
+                    <div class="detail-column">
+                        <div class="detail-row">
+                            <span class="detail-label">Eletronegatividade:</span>
+                            <span class="detail-value" id="detail-electronegativity"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Eletroafinidade:</span>
+                            <span class="detail-value" id="detail-electron-affinity"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Energ. Ionização:</span>
+                            <span class="detail-value" id="detail-ionization-energy"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Raio Atômico:</span>
+                            <span class="detail-value" id="detail-atomic-radius"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Condut. Térmica:</span>
+                            <span class="detail-value" id="detail-thermal-conductivity"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Condut. Elétrica:</span>
+                            <span class="detail-value" id="detail-electrical-conductivity"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Calor Específico:</span>
+                            <span class="detail-value" id="detail-specific-heat"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Ano Descoberto:</span>
+                            <span class="detail-value" id="detail-discovery"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">País Descoberto:</span>
+                            <span class="detail-value" id="detail-discoverer"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de mensagens (inicialmente oculta) -->
+        <div class="app-container" id="chatContainer" style="display: none;">
+            <div class="chat-messages" id="chatMessages"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações da API - Lista de chaves para rotação
+        const OPENROUTER_API_KEYS = [
+            "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",
+            "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",
+            "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",
+            "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",
+            "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",
+            "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",
+            "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"
+        ];
+
+        let currentApiKeyIndex = 0;
+        let retryCount = 0;
+        let isProcessing = false;
+        let firstMessageSent = false;
+        const MAX_RETRIES = OPENROUTER_API_KEYS.length * 2;
+        const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+        const MODEL_NAME = "deepseek/deepseek-r1:free";
+        let currentChatId = null;
+        let chatHistory = {};
+        let isChatView = false;
+
+        const elements = [
+            { number: 1, symbol: "H", name: "Hidrogênio", mass: 1.008, category: "nao-metais", state: "gas", discovery: "1766", electron: "1s¹", description: "O elemento mais leve e abundante no universo." },
+            { number: 2, symbol: "He", name: "Hélio", mass: 4.0026, category: "gases-nobres", state: "gas", discovery: "1868", electron: "1s²", description: "Gás nobre usado em balões e ressonância magnética." },
+            { number: 3, symbol: "Li", name: "Lítio", mass: 6.94, category: "metais-alcalinos", state: "solid", discovery: "1817", electron: "[He] 2s¹", description: "Metal alcalino leve usado em baterias." },
+            { number: 4, symbol: "Be", name: "Berílio", mass: 9.0122, category: "alcalino-terrosos", state: "solid", discovery: "1798", electron: "[He] 2s²", description: "Metal alcalino-terroso usado em ligas avançadas." },
+            { number: 5, symbol: "B", name: "Boro", mass: 10.81, category: "pos-transicao", state: "solid", discovery: "1808", electron: "[He] 2s² 2p¹", description: "Semimetal usado em fibra de vidro e semicondutores." },
+            { number: 6, symbol: "C", name: "Carbono", mass: 12.011, category: "nao-metais", state: "solid", discovery: "Antiguidade", electron: "[He] 2s² 2p²", description: "Base de toda a vida orgânica na Terra." },
+            { number: 7, symbol: "N", name: "Nitrogênio", mass: 14.007, category: "nao-metais", state: "gas", discovery: "1772", electron: "[He] 2s² 2p³", description: "Gás que compõe 78% da atmosfera terrestre." },
+            { number: 8, symbol: "O", name: "Oxigênio", mass: 15.999, category: "nao-metais", state: "gas", discovery: "1774", electron: "[He] 2s² 2p⁴", description: "Gás essencial para a respiração e combustão." },
+            { number: 9, symbol: "F", name: "Flúor", mass: 18.998, category: "nao-metais", state: "gas", discovery: "1886", electron: "[He] 2s² 2p⁵", description: "O elemento mais eletronegativo, usado em pastas de dente." },
+            { number: 10, symbol: "Ne", name: "Neônio", mass: 20.180, category: "gases-nobres", state: "gas", discovery: "1898", electron: "[He] 2s² 2p⁶", description: "Gás nobre usado em sinais luminosos." },
+            { number: 11, symbol: "Na", name: "Sódio", mass: 22.990, category: "metais-alcalinos", state: "solid", discovery: "1807", electron: "[Ne] 3s¹", description: "Metal alcalino essencial para a vida animal." },
+            { number: 12, symbol: "Mg", name: "Magnésio", mass: 24.305, category: "alcalino-terrosos", state: "solid", discovery: "1755", electron: "[Ne] 3s²", description: "Metal alcalino-terroso usado em ligas leves." },
+            { number: 13, symbol: "Al", name: "Alumínio", mass: 26.982, category: "metaloides", state: "solid", discovery: "1825", electron: "[Ne] 3s² 3p¹", description: "Metal leve amplamente usado em embalagens." },
+            { number: 14, symbol: "Si", name: "Silício", mass: 28.085, category: "pos-transicao", state: "solid", discovery: "1824", electron: "[Ne] 3s² 3p²", description: "Semimetal fundamental para a eletrônica moderna." },
+            { number: 15, symbol: "P", name: "Fósforo", mass: 30.974, category: "nao-metais", state: "solid", discovery: "1669", electron: "[Ne] 3s² 3p³", description: "Elemento essencial para o DNA e fertilizantes." },
+            { number: 16, symbol: "S", name: "Enxofre", mass: 32.06, category: "nao-metais", state: "solid", discovery: "Antiguidade", electron: "[Ne] 3s² 3p⁴", description: "Usado em pneus, fertilizantes e ácido sulfúrico." },
+            { number: 17, symbol: "Cl", name: "Cloro", mass: 35.45, category: "nao-metais", state: "gas", discovery: "1774", electron: "[Ne] 3s² 3p⁵", description: "Halogenio usado em purificação de água e PVC." },
+            { number: 18, symbol: "Ar", name: "Argônio", mass: 39.948, category: "gases-nobres", state: "gas", discovery: "1894", electron: "[Ne] 3s² 3p⁶", description: "Gás nobre usado em lâmpadas e soldagem." },
+            { number: 19, symbol: "K", name: "Potássio", mass: 39.098, category: "metais-alcalinos", state: "solid", discovery: "1807", electron: "[Ar] 4s¹", description: "Metal alcalino essencial para a função nervosa." },
+            { number: 20, symbol: "Ca", name: "Cálcio", mass: 40.078, category: "alcalino-terrosos", state: "solid", discovery: "1808", electron: "[Ar] 4s²", description: "Essencial para ossos, dentes e contração muscular." },
+            { number: 21, symbol: "Sc", name: "Escândio", mass: 44.956, category: "transicao", state: "solid", discovery: "1879", electron: "[Ar] 3d¹ 4s²", description: "Metal de transição usado em luzes de alta intensidade." },
+            { number: 22, symbol: "Ti", name: "Titânio", mass: 47.867, category: "transicao", state: "solid", discovery: "1791", electron: "[Ar] 3d² 4s²", description: "Metal forte e leve usado em implantes médicos." },
+            { number: 23, symbol: "V", name: "Vanádio", mass: 50.942, category: "transicao", state: "solid", discovery: "1801", electron: "[Ar] 3d³ 4s²", description: "Usado em ligas de aço de alta resistência." },
+            { number: 24, symbol: "Cr", name: "Cromo", mass: 51.996, category: "transicao", state: "solid", discovery: "1797", electron: "[Ar] 3d⁵ 4s¹", description: "Usado em cromagem e aço inoxidável." },
+            { number: 25, symbol: "Mn", name: "Manganês", mass: 54.938, category: "transicao", state: "solid", discovery: "1774", electron: "[Ar] 3d⁵ 4s²", description: "Essencial para produção de aço e enzimas." },
+            { number: 26, symbol: "Fe", name: "Ferro", mass: 55.845, category: "transicao", state: "solid", discovery: "Antiguidade", electron: "[Ar] 3d⁶ 4s²", description: "Metal essencial para hemoglobina e construção." },
+            { number: 27, symbol: "Co", name: "Cobalto", mass: 58.933, category: "transicao", state: "solid", discovery: "1735", electron: "[Ar] 3d⁷ 4s²", description: "Usado em baterias recarregáveis e pigmentos." },
+            { number: 28, symbol: "Ni", name: "Níquel", mass: 58.693, category: "transicao", state: "solid", discovery: "1751", electron: "[Ar] 3d⁸ 4s²", description: "Usado em moedas e aço inoxidável." },
+            { number: 29, symbol: "Cu", name: "Cobre", mass: 63.546, category: "transicao", state: "solid", discovery: "Antiguidade", electron: "[Ar] 3d¹⁰ 4s¹", description: "Excelente condutor de eletricidade e calor." },
+            { number: 30, symbol: "Zn", name: "Zinco", mass: 65.38, category: "transicao", state: "solid", discovery: "1746", electron: "[Ar] 3d¹⁰ 4s²", description: "Usado em galvanização e ligas como latão." },
+            { number: 31, symbol: "Ga", name: "Gálio", mass: 69.723, category: "metaloides", state: "solid", discovery: "1875", electron: "[Ar] 3d¹⁰ 4s² 4p¹", description: "Derrete na mão (29.8°C), usado em semicondutores." },
+            { number: 32, symbol: "Ge", name: "Germânio", mass: 72.630, category: "pos-transicao", state: "solid", discovery: "1886", electron: "[Ar] 3d¹⁰ 4s² 4p²", description: "Semimetal importante na eletrônica." },
+            { number: 33, symbol: "As", name: "Arsênio", mass: 74.922, category: "pos-transicao", state: "solid", discovery: "1250", electron: "[Ar] 3d¹⁰ 4s² 4p³", description: "Tóxico, mas usado em semicondutores." },
+            { number: 34, symbol: "Se", name: "Selênio", mass: 78.971, category: "nao-metais", state: "solid", discovery: "1817", electron: "[Ar] 3d¹⁰ 4s² 4p⁴", description: "Usado em fotocopiadoras e painéis solares." },
+            { number: 35, symbol: "Br", name: "Bromo", mass: 79.904, category: "nao-metais", state: "liquid", discovery: "1826", electron: "[Ar] 3d¹⁰ 4s² 4p⁵", description: "Único halogênio líquido à temperatura ambiente." },
+            { number: 36, symbol: "Kr", name: "Criptônio", mass: 83.798, category: "gases-nobres", state: "gas", discovery: "1898", electron: "[Ar] 3d¹⁰ 4s² 4p⁶", description: "Gás nobre usado em lâmpadas fluorescentes." },
+            { number: 37, symbol: "Rb", name: "Rubídio", mass: 85.468, category: "metais-alcalinos", state: "solid", discovery: "1861", electron: "[Kr] 5s¹", description: "Metal alcalino usado em relógios atômicos." },
+            { number: 38, symbol: "Sr", name: "Estrôncio", mass: 87.62, category: "alcalino-terrosos", state: "solid", discovery: "1790", electron: "[Kr] 5s²", description: "Usado em fogos de artifício (cor vermelha)." },
+            { number: 39, symbol: "Y", name: "Ítrio", mass: 88.906, category: "transicao", state: "solid", discovery: "1794", electron: "[Kr] 4d¹ 5s²", description: "Usado em supercondutores e LEDs." },
+            { number: 40, symbol: "Zr", name: "Zircônio", mass: 91.224, category: "transicao", state: "solid", discovery: "1789", electron: "[Kr] 4d² 5s²", description: "Resistente à corrosão, usado em reatores nucleares." },
+            { number: 41, symbol: "Nb", name: "Nióbio", mass: 92.906, category: "transicao", state: "solid", discovery: "1801", electron: "[Kr] 4d⁴ 5s¹", description: "Usado em ligas de aço especiais." },
+            { number: 42, symbol: "Mo", name: "Molibdênio", mass: 95.95, category: "transicao", state: "solid", discovery: "1778", electron: "[Kr] 4d⁵ 5s¹", description: "Essencial para enzimas e ligas resistentes." },
+            { number: 43, symbol: "Tc", name: "Tecnécio", mass: 98, category: "transicao", state: "solid", discovery: "1937", electron: "[Kr] 4d⁵ 5s²", description: "Primeiro elemento artificialmente produzido." },
+            { number: 44, symbol: "Ru", name: "Rutênio", mass: 101.07, category: "transicao", state: "solid", discovery: "1844", electron: "[Kr] 4d⁷ 5s¹", description: "Usado em catalisadores e ligas resistentes." },
+            { number: 45, symbol: "Rh", name: "Ródio", mass: 102.91, category: "transicao", state: "solid", discovery: "1803", electron: "[Kr] 4d⁸ 5s¹", description: "Metal precioso usado em conversores catalíticos." },
+            { number: 46, symbol: "Pd", name: "Paládio", mass: 106.42, category: "transicao", state: "solid", discovery: "1803", electron: "[Kr] 4d¹⁰", description: "Usado em catalisadores e joalheria." },
+            { number: 47, symbol: "Ag", name: "Prata", mass: 107.87, category: "transicao", state: "solid", discovery: "Antiguidade", electron: "[Kr] 4d¹⁰ 5s¹", description: "Excelente condutor térmico e elétrico." },
+            { number: 48, symbol: "Cd", name: "Cádmio", mass: 112.41, category: "transicao", state: "solid", discovery: "1817", electron: "[Kr] 4d¹⁰ 5s²", description: "Usado em baterias níquel-cádmio (tóxico)." },
+            { number: 49, symbol: "In", name: "Índio", mass: 114.82, category: "metaloides", state: "solid", discovery: "1863", electron: "[Kr] 4d¹⁰ 5s² 5p¹", description: "Usado em telas touchscreen e LEDs." },
+            { number: 50, symbol: "Sn", name: "Estanho", mass: 118.71, category: "metaloides", state: "solid", discovery: "Antiguidade", electron: "[Kr] 4d¹⁰ 5s² 5p²", description: "Usado em soldas e latas de conserva." },
+            { number: 51, symbol: "Sb", name: "Antimônio", mass: 121.76, category: "pos-transicao", state: "solid", discovery: "Antiguidade", electron: "[Kr] 4d¹⁰ 5s² 5p³", description: "Usado em retardantes de chama e ligas." },
+            { number: 52, symbol: "Te", name: "Telúrio", mass: 127.60, category: "pos-transicao", state: "solid", discovery: "1782", electron: "[Kr] 4d¹⁰ 5s² 5p⁴", description: "Usado em painéis solares e ligas." },
+            { number: 53, symbol: "I", name: "Iodo", mass: 126.90, category: "nao-metais", state: "solid", discovery: "1811", electron: "[Kr] 4d¹⁰ 5s² 5p⁵", description: "Essencial para a tireoide, usado em desinfetantes." },
+            { number: 54, symbol: "Xe", name: "Xenônio", mass: 131.29, category: "gases-nobres", state: "gas", discovery: "1898", electron: "[Kr] 4d¹⁰ 5s² 5p⁶", description: "Usado em lâmpadas e anestésicos." },
+            { number: 55, symbol: "Cs", name: "Césio", mass: 132.91, category: "metais-alcalinos", state: "solid", discovery: "1860", electron: "[Xe] 6s¹", description: "Usado em relógios atômicos (precisão extrema)." },
+            { number: 56, symbol: "Ba", name: "Bário", mass: 137.33, category: "alcalino-terrosos", state: "solid", discovery: "1808", electron: "[Xe] 6s²", description: "Usado em contrastes para raio-X." },
+            { number: 57, symbol: "La", name: "Lantânio", mass: 138.91, category: "lantanideos", state: "solid", discovery: "1839", electron: "[Xe] 5d¹ 6s²", description: "Primeiro dos lantanídeos, usado em baterias." },
+            { number: 58, symbol: "Ce", name: "Cério", mass: 140.12, category: "lantanideos", state: "solid", discovery: "1803", electron: "[Xe] 4f¹ 5d¹ 6s²", description: "Usado em catalisadores e ligas." },
+            { number: 59, symbol: "Pr", name: "Praseodímio", mass: 140.91, category: "lantanideos", state: "solid", discovery: "1885", electron: "[Xe] 4f³ 6s²", description: "Usado em ligas e vidros especiais." },
+            { number: 60, symbol: "Nd", name: "Neodímio", mass: 144.24, category: "lantanideos", state: "solid", discovery: "1885", electron: "[Xe] 4f⁴ 6s²", description: "Usado em ímãs poderosos." },
+            { number: 61, symbol: "Pm", name: "Promécio", mass: 145, category: "lantanideos", state: "solid", discovery: "1945", electron: "[Xe] 4f⁵ 6s²", description: "Elemento radioativo artificial." },
+            { number: 62, symbol: "Sm", name: "Samário", mass: 150.36, category: "lantanideos", state: "solid", discovery: "1879", electron: "[Xe] 4f⁶ 6s²", description: "Usado em ímãs e tratamento de câncer." },
+            { number: 63, symbol: "Eu", name: "Európio", mass: 151.96, category: "lantanideos", state: "solid", discovery: "1901", electron: "[Xe] 4f⁷ 6s²", description: "Usado em telas de TV e cédulas de euro." },
+            { number: 64, symbol: "Gd", name: "Gadolínio", mass: 157.25, category: "lantanideos", state: "solid", discovery: "1880", electron: "[Xe] 4f⁷ 5d¹ 6s²", description: "Usado em ressonância magnética." },
+            { number: 65, symbol: "Tb", name: "Térbio", mass: 158.93, category: "lantanideos", state: "solid", discovery: "1843", electron: "[Xe] 4f⁹ 6s²", description: "Usado em dispositivos de armazenamento." },
+            { number: 66, symbol: "Dy", name: "Disprósio", mass: 162.50, category: "lantanideos", state: "solid", discovery: "1886", electron: "[Xe] 4f¹⁰ 6s²", description: "Usado em ímãs e reatores nucleares." },
+            { number: 67, symbol: "Ho", name: "Hólmio", mass: 164.93, category: "lantanideos", state: "solid", discovery: "1878", electron: "[Xe] 4f¹¹ 6s²", description: "Tem as propriedades magnéticas mais fortes." },
+            { number: 68, symbol: "Er", name: "Érbio", mass: 167.26, category: "lantanideos", state: "solid", discovery: "1843", electron: "[Xe] 4f¹² 6s²", description: "Usado em fibras ópticas e lasers." },
+            { number: 69, symbol: "Tm", name: "Túlio", mass: 168.93, category: "lantanideos", state: "solid", discovery: "1879", electron: "[Xe] 4f¹³ 6s²", description: "O mais raro dos lantanídeos naturais." },
+            { number: 70, symbol: "Yb", name: "Itérbio", mass: 173.05, category: "lantanideos", state: "solid", discovery: "1878", electron: "[Xe] 4f¹⁴ 6s²", description: "Usado em relógios atômicos e aços." },
+            { number: 71, symbol: "Lu", name: "Lutécio", mass: 174.97, category: "lantanideos", state: "solid", discovery: "1907", electron: "[Xe] 4f¹⁴ 5d¹ 6s²", description: "Último dos lantanídeos, usado em catálise." },
+            { number: 72, symbol: "Hf", name: "Háfnio", mass: 178.49, category: "transicao", state: "solid", discovery: "1923", electron: "[Xe] 4f¹⁴ 5d² 6s²", description: "Usado em barras de controle nuclear." },
+            { number: 73, symbol: "Ta", name: "Tântalo", mass: 180.95, category: "transicao", discovery: "1802", electron: "[Xe] 4f¹⁴ 5d³ 6s²", description: "Resistente à corrosão, usado em eletrônicos." },
+            { number: 74, symbol: "W", name: "Tungstênio", mass: 183.84, category: "transicao", discovery: "1783", electron: "[Xe] 4f¹⁴ 5d⁴ 6s²", description: "Maior ponto de fusão de todos os metais." },
+            { number: 75, symbol: "Re", name: "Rênio", mass: 186.21, category: "transicao", state: "solid", discovery: "1925", electron: "[Xe] 4f¹⁴ 5d⁵ 6s²", description: "Um dos elementos mais raros na crosta terrestre." },
+            { number: 76, symbol: "Os", name: "Ósmio", mass: 190.23, category: "transicao", discovery: "1803", electron: "[Xe] 4f¹⁴ 5d⁶ 6s²", description: "Substância natural mais densa conhecida." },
+            { number: 77, symbol: "Ir", name: "Irídio", mass: 192.22, category: "transicao", state: "solid", discovery: "1803", electron: "[Xe] 4f¹⁴ 5d⁷ 6s²", description: "Um dos elementos mais resistentes à corrosão." },
+            { number: 78, symbol: "Pt", name: "Platina", mass: 195.08, category: "transicao", state: "solid", discovery: "1735", electron: "[Xe] 4f¹⁴ 5d⁹ 6s¹", description: "Metal precioso usado em catalisadores e joias." },
+            { number: 79, symbol: "Au", name: "Ouro", mass: 196.97, category: "transicao", state: "solid", discovery: "Antiguidade", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s¹", description: "Metal precioso usado em joias e eletrônicos." },
+            { number: 80, symbol: "Hg", name: "Mercúrio", mass: 200.59, category: "transicao", state: "liquid", discovery: "Antiguidade", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s²", description: "Único metal líquido à temperatura ambiente." },
+            { number: 81, symbol: "Tl", name: "Tálio", mass: 204.38, category: "metaloides", state: "solid", discovery: "1861", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹", description: "Extremamente tóxico, usado em detectores infravermelhos." },
+            { number: 82, symbol: "Pb", name: "Chumbo", mass: 207.2, category: "metaloides", state: "solid", discovery: "Antiguidade", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²", description: "Usado em baterias, mas tóxico para humanos." },
+            { number: 83, symbol: "Bi", name: "Bismuto", mass: 208.98, category: "metaloides", state: "solid", discovery: "1753", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³", description: "O mais diamagnético de todos os metais." },
+            { number: 84, symbol: "Po", name: "Polônio", mass: 209, category: "metaloides", state: "solid", discovery: "1898", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴", description: "Elemento altamente radioativo." },
+            { number: 85, symbol: "At", name: "Astato", mass: 210, category: "metaloides", state: "solid", discovery: "1940", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵", description: "O halogênio mais raro e radioativo." },
+            { number: 86, symbol: "Rn", name: "Radônio", mass: 222, category: "gases-nobres", state: "gas", discovery: "1900", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶", description: "Gás nobre radioativo, perigoso para a saúde." },
+            { number: 87, symbol: "Fr", name: "Frâncio", mass: 223, category: "metais-alcalinos", state: "solid", discovery: "1939", electron: "[Rn] 7s¹", description: "O metal alcalino mais instável e radioativo." },
+            { number: 88, symbol: "Ra", name: "Rádio", mass: 226, category: "alcalino-terrosos", state: "solid", discovery: "1898", electron: "[Rn] 7s²", description: "Famoso por sua radioatividade, usado antigamente em tintas." },
+            { number: 89, symbol: "Ac", name: "Actínio", mass: 227, category: "actinideos", state: "solid", discovery: "1899", electron: "[Rn] 6d¹ 7s²", description: "Elemento radioativo que dá nome à série dos actinídeos." },
+            { number: 90, symbol: "Th", name: "Tório", mass: 232.04, category: "actinideos", state: "solid", discovery: "1829", electron: "[Rn] 6d² 7s²", description: "Usado como combustível nuclear em reatores." },
+            { number: 91, symbol: "Pa", name: "Protactínio", mass: 231.04, category: "actinideos", state: "solid", discovery: "1913", electron: "[Rn] 5f² 6d¹ 7s²", description: "Um dos elementos mais raros e caros." },
+            { number: 92, symbol: "U", name: "Urânio", mass: 238.03, category: "actinideos", state: "solid", discovery: "1789", electron: "[Rn] 5f³ 6d¹ 7s²", description: "Combustível principal para energia nuclear." },
+            { number: 93, symbol: "Np", name: "Netúnio", mass: 237, category: "actinideos", state: "solid", discovery: "1940", electron: "[Rn] 5f⁴ 6d¹ 7s²", description: "Primeiro elemento transurânico sintetizado." },
+            { number: 94, symbol: "Pu", name: "Plutônio", mass: 244, category: "actinideos", state: "solid", discovery: "1940", electron: "[Rn] 5f⁶ 7s²", description: "Usado em armas nucleares e como combustível." },
+            { number: 95, symbol: "Am", name: "Amerício", mass: 243, category: "actinideos", state: "solid", discovery: "1944", electron: "[Rn] 5f⁷ 7s²", description: "Usado em detectores de fumaça." },
+            { number: 96, symbol: "Cm", name: "Cúrio", mass: 247, category: "actinideos", state: "solid", discovery: "1944", electron: "[Rn] 5f⁷ 6d¹ 7s²", description: "Homenagem a Marie e Pierre Curie." },
+            { number: 97, symbol: "Bk", name: "Berquélio", mass: 247, category: "actinideos", state: "solid", discovery: "1949", electron: "[Rn] 5f⁹ 7s²", description: "Produzido em quantidades mínimas para pesquisa." },
+            { number: 98, symbol: "Cf", name: "Califórnio", mass: 251, category: "actinideos", state: "solid", discovery: "1950", electron: "[Rn] 5f¹⁰ 7s²", description: "Um dos elementos mais caros, usado em medicina nuclear." },
+            { number: 99, symbol: "Es", name: "Einstênio", mass: 252, category: "actinideos", state: "solid", discovery: "1952", electron: "[Rn] 5f¹¹ 7s²", description: "Homenagem a Albert Einstein." },
+            { number: 100, symbol: "Fm", name: "Férmio", mass: 257, category: "actinideos", state: "solid", discovery: "1952", electron: "[Rn] 5f¹² 7s²", description: "Homenagem a Enrico Fermi." },
+            { number: 101, symbol: "Md", name: "Mendelévio", mass: 258, category: "actinideos", state: "solid", discovery: "1955", electron: "[Rn] 5f¹³ 7s²", description: "Homenagem a Dmitri Mendeleev, criador da tabela periódica." },
+            { number: 102, symbol: "No", name: "Nobélio", mass: 259, category: "actinideos", state: "solid", discovery: "1958", electron: "[Rn] 5f¹⁴ 7s²", description: "Homenagem a Alfred Nobel." },
+            { number: 103, symbol: "Lr", name: "Laurêncio", mass: 262, category: "actinideos", state: "solid", discovery: "1961", electron: "[Rn] 5f¹⁴ 7s² 7p¹", description: "Homenagem a Ernest Lawrence, inventor do ciclotron." },
+            { number: 104, symbol: "Rf", name: "Rutherfórdio", mass: 267, category: "transicao", state: "solid", discovery: "1964", electron: "[Rn] 5f¹⁴ 6d² 7s²", description: "Homenagem a Ernest Rutherford." },
+            { number: 105, symbol: "Db", name: "Dúbnio", mass: 268, category: "transicao", state: "solid", discovery: "1967", electron: "[Rn] 5f¹⁴ 6d³ 7s²", description: "Homenagem ao Instituto Conjunto de Pesquisa Nuclear em Dubna, Rússia." },
+            { number: 106, symbol: "Sg", name: "Seabórgio", mass: 269, category: "transicao", state: "solid", discovery: "1974", electron: "[Rn] 5f¹⁴ 6d⁴ 7s²", description: "Homenagem a Glenn T. Seaborg." },
+            { number: 107, symbol: "Bh", name: "Bóhrio", mass: 270, category: "transicao", state: "solid", discovery: "1981", electron: "[Rn] 5f¹⁴ 6d⁵ 7s²", description: "Homenagem a Niels Bohr." },
+            { number: 108, symbol: "Hs", name: "Hássio", mass: 269, category: "transicao", state: "solid", discovery: "1984", electron: "[Rn] 5f¹⁴ 6d⁶ 7s²", description: "Homenagem ao estado alemão de Hesse." },
+            { number: 109, symbol: "Mt", name: "Meitnério", mass: 278, category: "desconhecidos", state: "solid", discovery: "1982", electron: "[Rn] 5f¹⁴ 6d⁷ 7s²", description: "Homenagem a Lise Meitner." },
+            { number: 110, symbol: "Ds", name: "Darmstádio", mass: 281, category: "desconhecidos", state: "solid", discovery: "1994", electron: "[Rn] 5f¹⁴ 6d⁹ 7s¹", description: "Homenagem à cidade de Darmstadt, Alemanha." },
+            { number: 111, symbol: "Rg", name: "Roentgênio", mass: 282, category: "desconhecidos", state: "solid", discovery: "1994", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s¹", description: "Homenagem a Wilhelm Röntgen, descobridor dos raios X." },
+            { number: 112, symbol: "Cn", name: "Copernício", mass: 285, category: "desconhecidos", state: "liquid", discovery: "1996", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s²", description: "Homenagem a Nicolau Copérnico." },
+            { number: 113, symbol: "Nh", name: "Nihônio", mass: 286, category: "desconhecidos", state: "solid", discovery: "2004", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹", description: "Do japonês 'Nihon' (Japão), primeiro elemento descoberto na Ásia." },
+            { number: 114, symbol: "Fl", name: "Fleróvio", mass: 289, category: "desconhecidos", state: "liquid", discovery: "1999", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²", description: "Homenagem a Georgy Flyorov, físico nuclear." },
+            { number: 115, symbol: "Mc", name: "Moscóvio", mass: 290, category: "desconhecidos", state: "solid", discovery: "2004", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³", description: "Homenagem à região de Moscou." },
+            { number: 116, symbol: "Lv", name: "Livermório", mass: 293, category: "desconhecidos", state: "solid", discovery: "2000", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴", description: "Homenagem ao Laboratório Nacional Lawrence Livermore." },
+            { number: 117, symbol: "Ts", name: "Tenesso", mass: 294, category: "desconhecidos", state: "solid", discovery: "2010", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵", description: "Homenagem ao estado do Tennessee, EUA." },
+            { number: 118, symbol: "Og", name: "Oganessônio", mass: 294, category: "desconhecidos", state: "gas", discovery: "2006", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶", description: "Homenagem a Yuri Oganessian, físico nuclear." }
+        ];
+
+        const positions = {
+            1: [1, 2], 2: [1, 19],
+
+            3: [2, 2], 4: [2, 3],
+            5: [2, 14], 6: [2, 15], 7: [2, 16], 8: [2, 17], 9: [2, 18], 10: [2, 19],
+
+            11: [3, 2], 12: [3, 3],
+            13: [3, 14], 14: [3, 15], 15: [3, 16], 16: [3, 17], 17: [3, 18], 18: [3, 19],
+
+            19: [4, 2], 20: [4, 3],
+            21: [4, 4], 22: [4, 5], 23: [4, 6], 24: [4, 7], 25: [4, 8], 26: [4, 9], 27: [4, 10], 28: [4, 11], 29: [4, 12], 30: [4, 13],
+            31: [4, 14], 32: [4, 15], 33: [4, 16], 34: [4, 17], 35: [4, 18], 36: [4, 19],
+
+            37: [5, 2], 38: [5, 3],
+            39: [5, 4], 40: [5, 5], 41: [5, 6], 42: [5, 7], 43: [5, 8], 44: [5, 9], 45: [5, 10], 46: [5, 11], 47: [5, 12], 48: [5, 13],
+            49: [5, 14], 50: [5, 15], 51: [5, 16], 52: [5, 17], 53: [5, 18], 54: [5, 19],
+
+            55: [6, 2], 56: [6, 3],
+            72: [6, 5], 73: [6, 6], 74: [6, 7], 75: [6, 8], 76: [6, 9], 77: [6, 10], 78: [6, 11], 79: [6, 12], 80: [6, 13],
+            81: [6, 14], 82: [6, 15], 83: [6, 16], 84: [6, 17], 85: [6, 18], 86: [6, 19],
+
+            87: [7, 2], 88: [7, 3],
+            104: [7, 5], 105: [7, 6], 106: [7, 7], 107: [7, 8], 108: [7, 9], 109: [7, 10], 110: [7, 11], 111: [7, 12], 112: [7, 13],
+            113: [7, 14], 114: [7, 15], 115: [7, 16], 116: [7, 17], 117: [7, 18], 118: [7, 19]
+        };
+
+        const lanthanides = [57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71];
+        const actinides = [89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103];
+
+        let lockedElement = null;
+        let hoveredElement = null;
+
+        // Função para alternar entre a visualização da tabela e do chat
+        function toggleView() {
+            isChatView = !isChatView;
+
+            if (isChatView) {
+                // Mostrar chat, esconder tabela
+                document.getElementById('periodic-table-container').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'block';
+                document.getElementById('toggleViewBtn').textContent = 'Modo Tabela';
+
+                // Mostrar barra inferior e botão Novo Chat
+                document.getElementById('bottomSearch').style.display = 'block';
+                document.getElementById('newChatBtnContainer').style.display = 'block';
+
+                // Esconder barra do cabeçalho
+                document.getElementById('headerSearch').style.display = 'none';
+            } else {
+                // Mostrar tabela, esconder chat
+                document.getElementById('periodic-table-container').style.display = 'block';
+                document.getElementById('chatContainer').style.display = 'none';
+                document.getElementById('toggleViewBtn').textContent = '▶ Jogar';
+
+                // Esconder barra inferior e botão Novo Chat
+                document.getElementById('bottomSearch').style.display = 'none';
+                document.getElementById('newChatBtnContainer').style.display = 'none';
+
+                // Mostrar barra do cabeçalho
+                document.getElementById('headerSearch').style.display = 'block';
+            }
+        }
+
+        // Função para mostrar a barra de pesquisa do cabeçalho no modo chat
+        function showHeaderSearchInChat() {
+            const headerSearch = document.getElementById('headerSearch');
+            headerSearch.style.display = 'block';
+            headerSearch.style.position = 'fixed';
+            headerSearch.style.top = '50%';
+            headerSearch.style.left = '50%';
+            headerSearch.style.transform = 'translate(-50%, -50%)';
+            headerSearch.style.zIndex = '1001';
+            headerSearch.style.width = '600px';
+            headerSearch.style.maxWidth = '90%';
+
+            document.getElementById('perguntaInput').focus();
+        }
+
+        // Função para esconder a barra de pesquisa do cabeçalho no modo chat
+        function hideHeaderSearchInChat() {
+            const headerSearch = document.getElementById('headerSearch');
+            headerSearch.style.display = 'none';
+            headerSearch.style.position = '';
+            headerSearch.style.top = '';
+            headerSearch.style.left = '';
+            headerSearch.style.transform = '';
+            headerSearch.style.zIndex = '';
+            headerSearch.style.width = '';
+        }
+
+        // Função principal para enviar mensagens
+        async function sendMessage(message, isBottom = false) {
+            if (isProcessing || !message.trim()) return;
+
+            isProcessing = true;
+            const input = isBottom ? document.getElementById('perguntaInputBottom') : document.getElementById('perguntaInput');
+
+            // Limpa o campo de entrada
+            input.value = '';
+            if (isBottom) {
+                document.getElementById('submitBtnBottom').disabled = true;
+                adjustTextareaHeight(input);
+            } else {
+                hideHeaderSearchInChat();
+            }
+
+            // Garante que está no modo chat
+            if (!isChatView) {
+                toggleView();
+            }
+
+            const chatMessages = document.getElementById('chatMessages');
+
+            // Adiciona mensagem do usuário
+            chatMessages.innerHTML += `
+                <div class="message-container user-message-container">
+                    <div class="message-content user-message-content">${escapeHtml(message)}</div>
+                </div>
+            `;
+
+            // Mostra a barra de pesquisa inferior
+            if (!firstMessageSent) {
+                firstMessageSent = true;
+                document.getElementById('bottomSearch').style.display = 'block';
+                document.querySelector('.app-container').style.paddingBottom = '120px';
+            }
+
+            // Scroll para baixo e foco no input
+            scrollToBottomInstant();
+            (isBottom ? document.getElementById('perguntaInputBottom') : document.getElementById('perguntaInput')).focus();
+
+            const loadingId = 'loading-' + Date.now();
+            chatMessages.innerHTML += `
+                <div id="${loadingId}" class="loading-message">
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Processando...</div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const response = await generateAIResponse(message);
+                document.getElementById(loadingId).remove();
+
+                // Adiciona resposta do bot
+                chatMessages.innerHTML += `
+                    <div class="message-container bot-message-container">
+                        <div class="message-content bot-message-content">${marked.parse(response)}</div>
+                    </div>
+                `;
+
+                updateChatHistory(message, response, !isBottom);
+                scrollToBottomInstant();
+
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                chatMessages.innerHTML += `
+                    <div class="message-container bot-message-container">
+                        <div class="message-content bot-message-content" style="color:red">
+                            ERRO: ${escapeHtml(error.message.replace('Error: ', ''))}
+                        </div>
+                    </div>
+                `;
+            } finally {
+                isProcessing = false;
+                if (isBottom) {
+                    document.getElementById('submitBtnBottom').disabled = false;
+                }
+            }
+        }
+
+        // Função para gerar resposta da IA
+        async function generateAIResponse(message) {
+            for (const apiKey of OPENROUTER_API_KEYS) {
+                try {
+                    console.log(`Testando chave: ${apiKey.substring(0, 5)}...`);
+
+                    const response = await fetch(OPENROUTER_API_URL, {
+                        method: 'POST',
+                        headers: {
+                            "Authorization": `Bearer ${apiKey}`,
+                            "Content-Type": "application/json",
+                            "HTTP-Referer": window.location.href,
+                            "X-Title": "AtomiChat"
+                        },
+                        body: JSON.stringify({
+                            "model": MODEL_NAME,
+                            "messages": [{
+                                "role": "user",
+                                "content": `Você é o ATOMICHAT, um assistente especializado em química com conhecimentos avançados e capacidade de explicar conceitos complexos de forma clara e acessível. Responda à seguinte pergunta sobre química:\n\n"${message}"`
+                            }]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error?.message || `HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    return data.choices[0].message.content;
+
+                } catch (error) {
+                    console.warn(`Falha com chave ${apiKey.substring(0, 5)}:`, error.message);
+                    continue;
+                }
+            }
+            throw new Error("Todas as chaves falharam");
+        }
+
+        // Funções auxiliares
+        function scrollToBottomInstant() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            const newHeight = Math.min(textarea.scrollHeight, 150);
+            textarea.style.height = newHeight + 'px';
+            textarea.style.overflowY = newHeight >= 150 ? 'auto' : 'hidden';
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;")
+                .replace(/\n/g, '<br>');
+        }
+
+        function updateChatHistory(pergunta, resposta, isNewChat) {
+            if (isNewChat || !currentChatId) {
+                currentChatId = `chat_${Date.now()}`;
+                chatHistory[currentChatId] = {
+                    messages: [],
+                    title: createChatTitle(pergunta),
+                    timestamp: Date.now()
+                };
+            }
+
+            chatHistory[currentChatId].messages.push(
+                { content: pergunta, is_user: true },
+                { content: resposta, is_user: false }
+            );
+            chatHistory[currentChatId].timestamp = Date.now();
+
+            saveChatsToLocalStorage();
+            updateSearchHistory();
+        }
+
+        function createChatTitle(pergunta) {
+            const palavras = pergunta.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+                .split(' ')
+                .filter(palavra => palavra.length > 3);
+
+            const titulo = palavras.slice(0, 5).join(' ');
+
+            return titulo || "Conversa sobre química";
+        }
+
+        function saveChatsToLocalStorage() {
+            localStorage.setItem('atomichat_history', JSON.stringify(chatHistory));
+        }
+
+        function loadChatsFromLocalStorage() {
+            const savedChats = localStorage.getItem('atomichat_history');
+            if (savedChats) {
+                chatHistory = JSON.parse(savedChats);
+                updateSearchHistory();
+            }
+        }
+
+        function updateSearchHistory() {
+            const searchHistory = document.getElementById('searchHistory');
+            const emptyHistory = document.getElementById('emptyHistory');
+            const historyContainer = searchHistory;
+
+            // Limpa o histórico atual
+            while (historyContainer.firstChild) {
+                historyContainer.removeChild(historyContainer.firstChild);
+            }
+
+            if (Object.keys(chatHistory).length === 0) {
+                const emptyItem = document.createElement('div');
+                emptyItem.className = 'search-history-empty';
+                emptyItem.id = 'emptyHistory';
+                emptyItem.textContent = 'Nenhum histórico de pesquisa';
+                historyContainer.appendChild(emptyItem);
+            } else {
+                // Ordena os chats pelo timestamp (mais recente primeiro)
+                const sortedChats = Object.entries(chatHistory).sort((a, b) => b[1].timestamp - a[1].timestamp);
+
+                // Adiciona cada chat ao histórico
+                sortedChats.forEach(([chatId, chatData]) => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'search-history-item';
+                    historyItem.textContent = chatData.title;
+                    historyItem.addEventListener('click', () => {
+                        switchToChat(chatId);
+                        document.getElementById('searchHistory').style.display = 'none';
+                        if (isChatView) {
+                            hideHeaderSearchInChat();
+                        }
+                    });
+                    historyContainer.appendChild(historyItem);
+                });
+            }
+
+            // Adiciona o botão de limpar histórico
+            const clearButton = document.createElement('div');
+            clearButton.className = 'search-history-clear';
+            clearButton.id = 'clearHistory';
+            clearButton.textContent = 'Limpar histórico';
+            clearButton.addEventListener('click', clearAllChats);
+            historyContainer.appendChild(clearButton);
+        }
+
+        function switchToChat(chatId) {
+            if (!chatHistory[chatId]) return;
+
+            currentChatId = chatId;
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+
+            // Adiciona todas as mensagens do chat selecionado
+            chatHistory[chatId].messages.forEach(msg => {
+                if (msg.is_user) {
+                    chatMessages.innerHTML += `
+                    <div class="message-container user-message-container">
+                        <div class="message-content user-message-content">${escapeHtml(msg.content)}</div>
+                    </div>
+                `;
+                } else {
+                    chatMessages.innerHTML += `
+                    <div class="message-container bot-message-container">
+                        <div class="message-content bot-message-content">${marked.parse(msg.content)}</div>
+                    </div>
+                `;
+                }
+            });
+
+            // Mostra a barra de pesquisa inferior
+            document.getElementById('bottomSearch').style.display = 'block';
+            document.querySelector('.app-container').style.paddingBottom = '120px';
+
+            // Garante que está no modo chat
+            if (!isChatView) {
+                toggleView();
+            }
+        }
+
+        function clearAllChats() {
+            const confirmClear = confirm('Deseja realmente limpar todo o histórico de conversas?');
+            if (!confirmClear) return;
+
+            chatHistory = {};
+            currentChatId = null;
+            localStorage.removeItem('atomichat_history');
+            document.getElementById('chatMessages').innerHTML = '';
+            updateSearchHistory();
+
+            // Esconde a barra de pesquisa inferior se estiver visível
+            document.getElementById('bottomSearch').style.display = 'none';
+            document.querySelector('.app-container').style.paddingBottom = '80px';
+        }
+
+        // Funções da tabela periódica
+        function createPeriodicTable() {
+            const table = document.getElementById('periodic-table');
+            table.innerHTML = '';
+
+            for (let col = 1; col <= 18; col++) {
+                const groupNumber = document.createElement('div');
+                groupNumber.className = 'group-number';
+                groupNumber.textContent = col;
+
+                let row = 1;
+
+                if (col >= 2 && col <= 12) {
+                    if (col === 2) {
+                        row = 2;
+                    } else {
+                        row = 4;
+                    }
+                } else if (col >= 13 && col <= 17) {
+                    row = 2;
+                }
+
+                groupNumber.style.gridRow = row.toString();
+                groupNumber.style.gridColumn = (col + 1).toString();
+                table.appendChild(groupNumber);
+            }
+
+            for (let row = 1; row <= 7; row++) {
+                const periodNumber = document.createElement('div');
+                periodNumber.className = 'period-number';
+                periodNumber.style.gridColumn = '1';
+                periodNumber.style.gridRow = (row + 1).toString();
+                periodNumber.textContent = row;
+                table.appendChild(periodNumber);
+            }
+
+            elements.forEach(element => {
+                if (positions[element.number]) {
+                    const [row, col] = positions[element.number];
+                    const elementDiv = createElementDiv(element, row + 1, col);
+                    table.appendChild(elementDiv);
+                }
+            });
+
+            const lanthanidePlaceholder = document.createElement('div');
+            lanthanidePlaceholder.className = 'series-placeholder';
+            lanthanidePlaceholder.style.gridRow = '7';
+            lanthanidePlaceholder.style.gridColumn = '4 / span 15';
+            lanthanidePlaceholder.textContent = 'Lantanídeos (57-71)';
+            table.appendChild(lanthanidePlaceholder);
+
+            const actinidePlaceholder = document.createElement('div');
+            actinidePlaceholder.className = 'series-placeholder';
+            actinidePlaceholder.style.gridRow = '8';
+            actinidePlaceholder.style.gridColumn = '4 / span 15';
+            actinidePlaceholder.textContent = 'Actinídeos (89-103)';
+            table.appendChild(actinidePlaceholder);
+
+            const enlargedContainer = document.createElement('div');
+            enlargedContainer.id = 'enlarged-element-container';
+            enlargedContainer.className = 'enlarged-element-container';
+            enlargedContainer.style.gridRow = '2 / span 2';
+            enlargedContainer.style.gridColumn = '4 / span 2';
+            table.appendChild(enlargedContainer);
+
+            const hydrogen = elements.find(e => e.number === 1);
+            if (hydrogen) {
+                updateEnlargedElement(hydrogen);
+            }
+        }
+
+        function createLanthanidesActinides() {
+            const container = document.getElementById('lanthanides-actinides');
+            container.innerHTML = '';
+
+            const lanthanideElements = elements.filter(e => lanthanides.includes(e.number))
+                .sort((a, b) => a.number - b.number);
+
+            lanthanideElements.forEach((element, index) => {
+                const elementDiv = createElementDiv(element, 1, index + 1);
+                container.appendChild(elementDiv);
+            });
+
+            const actinideElements = elements.filter(e => actinides.includes(e.number))
+                .sort((a, b) => a.number - b.number);
+
+            actinideElements.forEach((element, index) => {
+                const elementDiv = createElementDiv(element, 2, index + 1);
+                container.appendChild(elementDiv);
+            });
+        }
+
+        function createElementDiv(element, row, col) {
+            const elementDiv = document.createElement('div');
+            elementDiv.className = `element ${element.category} ${element.state}`;
+            elementDiv.style.gridRow = row;
+            elementDiv.style.gridColumn = col;
+
+            elementDiv.innerHTML = `
+                <span class="number">${element.number}</span>
+                <span class="symbol">${element.symbol}</span>
+                <span class="name">${element.name}</span>
+            `;
+
+            elementDiv.addEventListener('mouseenter', (e) => {
+                if (!lockedElement) {
+                    hoveredElement = element;
+                    updateEnlargedElement(element);
+                }
+                showElementDetails(element, e);
+            });
+
+            elementDiv.addEventListener('mouseleave', () => {
+                if (!lockedElement && hoveredElement === element) {
+                    hoveredElement = null;
+                    const hydrogen = elements.find(e => e.number === 1);
+                    if (hydrogen) {
+                        updateEnlargedElement(hydrogen);
+                    }
+                }
+                hideElementDetails();
+            });
+
+            elementDiv.addEventListener('click', (e) => {
+                lockedElement = element;
+                updateEnlargedElement(element);
+                showElementDetails(element, e);
+
+                document.querySelectorAll('.element.locked').forEach(el => {
+                    el.classList.remove('locked');
+                });
+
+                elementDiv.classList.add('locked');
+            });
+
+            return elementDiv;
+        }
+
+        function updateEnlargedElement(element) {
+            const enlargedContainer = document.getElementById('enlarged-element-container');
+            enlargedContainer.innerHTML = '';
+
+            const enlargedElement = document.createElement('div');
+            enlargedElement.className = `enlarged-element ${element.category} ${element.state}`;
+
+            enlargedElement.innerHTML = `
+                <span class="number">${element.number}</span>
+                <span class="symbol">${element.symbol}</span>
+                <span class="name">${element.name}</span>
+                <span class="mass">${element.mass}</span>
+                <div class="enlarged-element-info">
+                    <div class="info-item" data-target="number"> - Número Atômico</div>
+                    <div class="info-item" data-target="symbol"> - Símbolo</div>
+                    <div class="info-item" data-target="name"> - Nome</div>
+                    <div class="info-item" data-target="mass"> - Massa Atômica</div>
+                </div>
+                <div class="element-legend">
+                    <div class="legend-item"><span class="legend-color legend-metais-alcalinos"></span>Metais Alcalinos</div>
+                    <div class="legend-item"><span class="legend-color legend-alcalino-terrosos"></span>Alcalino-Terrosos</div>
+                    <div class="legend-item"><span class="legend-color legend-transicao"></span>Metais de Transição</div>
+                    <div class="legend-item"><span class="legend-color legend-pos-transicao"></span>Pós-Transição</div>
+                    <div class="legend-item"><span class="legend-color legend-metaloides"></span>Semimetais</div>
+                    <div class="legend-item"><span class="legend-color legend-nao-metais"></span>Não Metais</div>
+                    <div class="legend-item"><span class="legend-color legend-gases-nobres"></span>Gases Nobres</div>
+                    <div class="legend-item"><span class="legend-color legend-lantanideos"></span>Lantanídeos</div>
+                    <div class="legend-item"><span class="legend-color legend-actinideos"></span>Actinídeos</div>
+                    <div class="legend-item"><span class="legend-color legend-desconhecidos"></span>Desconhecidos</div>
+                </div>
+            `;
+
+            const infoItems = enlargedElement.querySelectorAll('.info-item');
+            infoItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    const target = item.getAttribute('data-target');
+                    highlightElementInfo(target);
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    removeHighlight();
+                });
+            });
+
+            enlargedContainer.appendChild(enlargedElement);
+        }
+
+        function highlightElementInfo(target) {
+            const enlargedElement = document.querySelector('.enlarged-element');
+            if (!enlargedElement) return;
+
+            removeHighlight();
+
+            const elementToHighlight = enlargedElement.querySelector(`.${target}`);
+            if (elementToHighlight) {
+                elementToHighlight.classList.add('highlighted');
+            }
+        }
+
+        function removeHighlight() {
+            const highlightedElements = document.querySelectorAll('.highlighted');
+            highlightedElements.forEach(el => {
+                el.classList.remove('highlighted');
+            });
+        }
+
+        function showElementDetails(element, event) {
+            const details = document.getElementById('element-details');
+            document.getElementById('detail-title').textContent = element.name;
+            document.getElementById('detail-number').textContent = element.number;
+            document.getElementById('detail-symbol').textContent = element.symbol;
+            document.getElementById('detail-mass').textContent = element.mass;
+            document.getElementById('detail-category').textContent = getCategoryName(element.category);
+            document.getElementById('detail-state').textContent = getStateName(element.state);
+            document.getElementById('detail-electron').textContent = element.electron;
+            document.getElementById('detail-discovery').textContent = element.discovery || 'Desconhecido';
+            document.getElementById('detail-discoverer').textContent = element.discoverer || 'Desconhecido';
+
+            const elementRect = event.target.getBoundingClientRect();
+            const detailsWidth = details.offsetWidth;
+            const detailsHeight = details.offsetHeight;
+
+            let left = elementRect.right + 10;
+            let top = elementRect.top;
+
+            if (left + detailsWidth > window.innerWidth) {
+                left = elementRect.left - detailsWidth - 10;
+            }
+
+            if (top + detailsHeight > window.innerHeight) {
+                top = window.innerHeight - detailsHeight - 10;
+            }
+
+            if (top < 0) {
+                top = 10;
+            }
+
+            details.style.left = `${left}px`;
+            details.style.top = `${top}px`;
+            details.style.display = 'block';
+        }
+
+        function hideElementDetails() {
+            document.getElementById('element-details').style.display = 'none';
+        }
+
+        function getCategoryName(category) {
+            const categories = {
+                'metais-alcalinos': 'Metal Alcalino',
+                'alcalino-terrosos': 'Metal Alcalino-Terroso',
+                'transicao': 'Metal de Transição',
+                'pos-transicao': 'Metal Pós-Transição',
+                'metaloides': 'Semimetal',
+                'nao-metais': 'Não Metal',
+                'halogen': 'Halogênio',
+                'gases-nobres': 'Gás Nobre',
+                'lantanideos': 'Lantanídeo',
+                'actinideos': 'Actinídeo',
+                'desconhecidos': 'Propriedades Desconhecidas'
+            };
+            return categories[category] || category;
+        }
+
+        function getStateName(state) {
+            const states = {
+                'solid': 'Sólido',
+                'liquid': 'Líquido',
+                'gas': 'Gasoso'
+            };
+            return states[state] || state;
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                createPeriodicTable();
+                createLanthanidesActinides();
+                loadChatsFromLocalStorage();
+
+                // Configuração dos textareas
+                const input = document.getElementById('perguntaInput');
+                input.addEventListener('input', function () {
+                    adjustTextareaHeight(this);
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const question = input.value.trim();
+                        if (question) {
+                            sendMessage(question);
+                        }
+                    }
+                });
+
+                const inputBottom = document.getElementById('perguntaInputBottom');
+                inputBottom.addEventListener('input', function () {
+                    adjustTextareaHeight(this);
+                    document.getElementById('submitBtnBottom').disabled = this.value.trim() === '';
+                });
+
+                inputBottom.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const question = inputBottom.value.trim();
+                        if (question) {
+                            sendMessage(question, true);
+                        }
+                    }
+                });
+
+                // Configuração dos formulários
+                document.getElementById('chatForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const question = document.getElementById('perguntaInput').value.trim();
+                    if (question) {
+                        sendMessage(question);
+                    }
+                });
+
+                document.getElementById('chatFormBottom').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const question = document.getElementById('perguntaInputBottom').value.trim();
+                    if (question) {
+                        sendMessage(question, true);
+                    }
+                });
+
+                // Configuração do botão de alternar visualização
+                document.getElementById('toggleViewBtn').addEventListener('click', toggleView);
+
+                // Configuração do botão "Novo Chat"
+                document.getElementById('newChatBtn').addEventListener('click', function () {
+                    showHeaderSearchInChat();
+                });
+
+                // Configuração do histórico de pesquisa
+                document.getElementById('perguntaInput').addEventListener('focus', () => {
+                    document.getElementById('searchHistory').style.display = 'block';
+                });
+
+                document.addEventListener('click', (e) => {
+                    const searchHistory = document.getElementById('searchHistory');
+                    const headerSearch = document.getElementById('headerSearch');
+                    const perguntaInput = document.getElementById('perguntaInput');
+
+                    // Esconde o histórico se clicar fora
+                    if (!e.target.closest('.header-search-container') &&
+                        !e.target.closest('.search-history') &&
+                        e.target !== perguntaInput) {
+                        searchHistory.style.display = 'none';
+                    }
+
+                    // Esconde a barra de pesquisa do cabeçalho no modo chat se clicar fora
+                    if (isChatView &&
+                        !e.target.closest('#headerSearch') &&
+                        e.target !== document.getElementById('newChatBtn')) {
+                        hideHeaderSearchInChat();
+                    }
+                });
+
+            } catch (error) {
+                console.error('Erro ao inicializar:', error);
+                alert('Erro ao carregar a aplicação. Verifique o console para mais detalhes.');
+            }
+        });
+    </script>
+</body>
+
+</html>

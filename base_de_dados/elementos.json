@@ -1,0 +1,32 @@
+{
+    "Hidrogênio": {
+        "simbolo": "H",
+        "numero_atomico": 1,
+        "massa_atomica": 1.008,
+        "grupo": 1,
+        "periodo": 1,
+        "configuracao_eletronica": "1s¹",
+        "estado_padrao": "Gasoso",
+        "eletronegatividade": 2.20
+    },
+    "Oxigênio": {
+        "simbolo": "O",
+        "numero_atomico": 8,
+        "massa_atomica": 15.999,
+        "grupo": 16,
+        "periodo": 2,
+        "configuracao_eletronica": "[He] 2s² 2p⁴",
+        "estado_padrao": "Gasoso",
+        "eletronegatividade": 3.44
+    },
+    "Ferro": {
+        "simbolo": "Fe",
+        "numero_atomico": 26,
+        "massa_atomica": 55.845,
+        "grupo": 8,
+        "periodo": 4,
+        "configuracao_eletronica": "[Ar] 3d⁶ 4s²",
+        "estado_padrao": "Sólido",
+        "eletronegatividade": 1.83
+    }
+}

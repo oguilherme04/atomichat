@@ -148,6 +148,22 @@
         <div class="app-container" id="chatContainer" style="display: none;">
             <div class="chat-messages" id="chatMessages"></div>
         </div>
+
+        <!-- Área do Quiz (inicialmente oculta) -->
+        <div class="app-container" id="quizContainer" style="display: none;">
+            <div class="quiz-header">
+                <h2>Quiz de Química</h2>
+                <div class="quiz-progress" id="quizProgress">Pergunta 1 de 10</div>
+                <div class="quiz-score" id="quizScore">Pontuação: 0</div>
+            </div>
+            <div class="quiz-question" id="quizQuestion"></div>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="quiz-feedback" id="quizFeedback"></div>
+            <div class="quiz-controls">
+                <button class="quiz-button" id="nextQuestionBtn" style="display: none;">Próxima Pergunta</button>
+                <button class="quiz-button" id="finishQuizBtn" style="display: none;">Finalizar Quiz</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -172,6 +188,11 @@
         let currentChatId = null;
         let chatHistory = {};
         let isChatView = false;
+        let isQuizView = false;
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let quizScore = 0;
+        let selectedOption = null;
 
         const elements = [
             { number: 1, symbol: "H", name: "Hidrogênio", mass: 1.008, category: "nao-metais", state: "gas", discovery: "1766", electron: "1s¹", description: "O elemento mais leve e abundante no universo." },
@@ -326,35 +347,222 @@
         let lockedElement = null;
         let hoveredElement = null;
 
-        // Função para alternar entre a visualização da tabela e do chat
+        // Função para alternar entre a visualização da tabela, chat e quiz
         function toggleView() {
-            isChatView = !isChatView;
-
-            if (isChatView) {
-                // Mostrar chat, esconder tabela
-                document.getElementById('periodic-table-container').style.display = 'none';
-                document.getElementById('chatContainer').style.display = 'block';
-                document.getElementById('toggleViewBtn').textContent = 'Modo Tabela';
-
-                // Mostrar barra inferior e botão Novo Chat
-                document.getElementById('bottomSearch').style.display = 'block';
-                document.getElementById('newChatBtnContainer').style.display = 'block';
-
-                // Esconder barra do cabeçalho
-                document.getElementById('headerSearch').style.display = 'none';
-            } else {
-                // Mostrar tabela, esconder chat
+            if (isQuizView) {
+                // Voltar para a tabela periódica
+                isQuizView = false;
+                isChatView = false;
                 document.getElementById('periodic-table-container').style.display = 'block';
                 document.getElementById('chatContainer').style.display = 'none';
+                document.getElementById('quizContainer').style.display = 'none';
                 document.getElementById('toggleViewBtn').textContent = '▶ Jogar';
-
+                
                 // Esconder barra inferior e botão Novo Chat
                 document.getElementById('bottomSearch').style.display = 'none';
                 document.getElementById('newChatBtnContainer').style.display = 'none';
-
+                
                 // Mostrar barra do cabeçalho
                 document.getElementById('headerSearch').style.display = 'block';
+            } else {
+                // Iniciar o quiz
+                startQuiz();
             }
+        }
+
+        // Função para iniciar o quiz
+        async function startQuiz() {
+            isQuizView = true;
+            isChatView = false;
+            
+            // Esconder tabela e chat, mostrar quiz
+            document.getElementById('periodic-table-container').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('toggleViewBtn').textContent = 'Voltar';
+            
+            // Esconder barra inferior e botão Novo Chat
+            document.getElementById('bottomSearch').style.display = 'none';
+            document.getElementById('newChatBtnContainer').style.display = 'none';
+            
+            // Esconder barra do cabeçalho
+            document.getElementById('headerSearch').style.display = 'none';
+            
+            // Resetar variáveis do quiz
+            currentQuestionIndex = 0;
+            quizScore = 0;
+            selectedOption = null;
+            
+            // Gerar perguntas do quiz
+            try {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'loading-message';
+                loadingDiv.innerHTML = `
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Gerando quiz...</div>
+                    </div>
+                `;
+                document.getElementById('quizQuestion').appendChild(loadingDiv);
+                
+                quizQuestions = await generateQuizQuestions();
+                document.getElementById('quizQuestion').removeChild(loadingDiv);
+                showQuestion();
+            } catch (error) {
+                console.error('Erro ao gerar quiz:', error);
+                alert('Erro ao gerar o quiz. Por favor, tente novamente.');
+                toggleView(); // Voltar para a tabela periódica em caso de erro
+            }
+        }
+
+        // Função para gerar perguntas do quiz usando a IA
+        async function generateQuizQuestions() {
+            const prompt = `Gere um quiz de química com 10 perguntas de múltipla escolha. Cada pergunta deve ter 4 opções (A, B, C, D) e apenas uma resposta correta. As perguntas devem cobrir diversos tópicos de química (tabela periódica, elementos químicos, reações, ligações, etc.). Formate cada pergunta como um objeto JSON com as propriedades: question (texto da pergunta), options (array com as 4 opções), answer (índice da resposta correta) e explanation (explicação da resposta). Retorne apenas um array JSON válido com as 10 perguntas, sem nenhum texto adicional.`;
+
+            for (const apiKey of OPENROUTER_API_KEYS) {
+                try {
+                    const response = await fetch(OPENROUTER_API_URL, {
+                        method: 'POST',
+                        headers: {
+                            "Authorization": `Bearer ${apiKey}`,
+                            "Content-Type": "application/json",
+                            "HTTP-Referer": window.location.href,
+                            "X-Title": "AtomiChat"
+                        },
+                        body: JSON.stringify({
+                            "model": MODEL_NAME,
+                            "messages": [{
+                                "role": "user",
+                                "content": prompt
+                            }]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error?.message || `HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    const content = data.choices[0].message.content;
+                    
+                    // Extrair o JSON da resposta
+                    const jsonStart = content.indexOf('[');
+                    const jsonEnd = content.lastIndexOf(']') + 1;
+                    const jsonString = content.slice(jsonStart, jsonEnd);
+                    
+                    return JSON.parse(jsonString);
+
+                } catch (error) {
+                    console.warn(`Falha com chave ${apiKey.substring(0, 5)}:`, error.message);
+                    continue;
+                }
+            }
+            throw new Error("Todas as chaves falharam ao gerar o quiz");
+        }
+
+        // Função para mostrar a pergunta atual do quiz
+        function showQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) {
+                finishQuiz();
+                return;
+            }
+
+            const question = quizQuestions[currentQuestionIndex];
+            document.getElementById('quizQuestion').innerHTML = `<h3>${question.question}</h3>`;
+            
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option';
+                optionDiv.innerHTML = `
+                    <input type="radio" name="quizOption" id="option${index}" value="${index}">
+                    <label for="option${index}">${String.fromCharCode(65 + index)}) ${option}</label>
+                `;
+                optionDiv.querySelector('input').addEventListener('change', () => {
+                    selectedOption = index;
+                });
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            document.getElementById('quizFeedback').innerHTML = '';
+            document.getElementById('nextQuestionBtn').style.display = 'none';
+            document.getElementById('finishQuizBtn').style.display = 'none';
+            
+            document.getElementById('quizProgress').textContent = `Pergunta ${currentQuestionIndex + 1} de ${quizQuestions.length}`;
+            document.getElementById('quizScore').textContent = `Pontuação: ${quizScore}`;
+        }
+
+        // Função para verificar a resposta selecionada
+        function checkAnswer() {
+            if (selectedOption === null) {
+                alert('Por favor, selecione uma opção antes de verificar.');
+                return;
+            }
+
+            const question = quizQuestions[currentQuestionIndex];
+            const isCorrect = selectedOption === question.answer;
+            
+            if (isCorrect) {
+                quizScore++;
+                document.getElementById('quizScore').textContent = `Pontuação: ${quizScore}`;
+            }
+            
+            const feedbackDiv = document.getElementById('quizFeedback');
+            feedbackDiv.innerHTML = `
+                <p class="${isCorrect ? 'correct' : 'incorrect'}">
+                    ${isCorrect ? '✅ Correto!' : '❌ Incorreto!'}
+                </p>
+                <p>${question.explanation}</p>
+            `;
+            
+            // Desabilitar todas as opções
+            document.querySelectorAll('.quiz-option input').forEach(input => {
+                input.disabled = true;
+            });
+            
+            // Mostrar botão de próxima pergunta ou finalizar
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                document.getElementById('nextQuestionBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('finishQuizBtn').style.display = 'inline-block';
+            }
+        }
+
+        // Função para avançar para a próxima pergunta
+        function nextQuestion() {
+            currentQuestionIndex++;
+            selectedOption = null;
+            showQuestion();
+        }
+
+        // Função para finalizar o quiz
+        function finishQuiz() {
+            const percentage = Math.round((quizScore / quizQuestions.length) * 100);
+            let message = '';
+            
+            if (percentage >= 90) {
+                message = 'Excelente! Você é um mestre da química!';
+            } else if (percentage >= 70) {
+                message = 'Muito bom! Você tem um bom conhecimento de química.';
+            } else if (percentage >= 50) {
+                message = 'Bom trabalho! Continue estudando para melhorar.';
+            } else {
+                message = 'Não desanime! A química é desafiadora, mas com prática você melhora.';
+            }
+            
+            document.getElementById('quizQuestion').innerHTML = `
+                <h3>Quiz Concluído!</h3>
+                <p>Sua pontuação final: ${quizScore} de ${quizQuestions.length} (${percentage}%)</p>
+                <p>${message}</p>
+            `;
+            
+            document.getElementById('quizOptions').innerHTML = '';
+            document.getElementById('quizFeedback').innerHTML = '';
+            document.getElementById('nextQuestionBtn').style.display = 'none';
+            document.getElementById('finishQuizBtn').style.display = 'inline-block';
         }
 
         // Função para mostrar a barra de pesquisa do cabeçalho no modo chat
@@ -402,7 +610,12 @@
 
             // Garante que está no modo chat
             if (!isChatView) {
-                toggleView();
+                isChatView = true;
+                isQuizView = false;
+                document.getElementById('periodic-table-container').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'block';
+                document.getElementById('quizContainer').style.display = 'none';
+                document.getElementById('toggleViewBtn').textContent = 'Modo Tabela';
             }
 
             const chatMessages = document.getElementById('chatMessages');
@@ -645,7 +858,12 @@
 
             // Garante que está no modo chat
             if (!isChatView) {
-                toggleView();
+                isChatView = true;
+                isQuizView = false;
+                document.getElementById('periodic-table-container').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'block';
+                document.getElementById('quizContainer').style.display = 'none';
+                document.getElementById('toggleViewBtn').textContent = 'Modo Tabela';
             }
         }
 
@@ -1001,6 +1219,17 @@
                 // Configuração do histórico de pesquisa
                 document.getElementById('perguntaInput').addEventListener('focus', () => {
                     document.getElementById('searchHistory').style.display = 'block';
+                });
+
+                // Configuração dos botões do quiz
+                document.getElementById('nextQuestionBtn').addEventListener('click', nextQuestion);
+                document.getElementById('finishQuizBtn').addEventListener('click', toggleView);
+
+                // Adiciona evento para verificar resposta quando uma opção é selecionada
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.quiz-option') && isQuizView) {
+                        checkAnswer();
+                    }
                 });
 
                 document.addEventListener('click', (e) => {

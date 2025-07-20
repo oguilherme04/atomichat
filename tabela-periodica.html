@@ -22,6 +22,12 @@
             <form method="POST" id="chatForm" class="header-search-container">
                 <textarea name="pergunta" id="perguntaInput" placeholder="Digite sua pergunta sobre química..." required
                     rows="1"></textarea>
+                <button type="submit" class="search-submit-button" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
                 <div class="search-history" id="searchHistory">
                     <div class="search-history-empty" id="emptyHistory">Nenhum histórico de pesquisa</div>
                     <div class="search-history-clear" id="clearHistory">Limpar histórico</div>
@@ -34,17 +40,17 @@
 
     <!-- Barra de pesquisa que aparece na parte inferior após a primeira pergunta -->
     <div class="search-bottom" id="bottomSearch">
-        <div class="new-chat-btn-container" id="newChatBtnContainer" style="display: none;">
-            <button class="new-chat-btn" id="newChatBtn">Novo Chat</button>
-        </div>
         <div class="search-bottom-container">
             <form method="POST" id="chatFormBottom" class="search-bottom-form">
                 <div class="input-field">
                     <textarea name="pergunta" id="perguntaInputBottom"
                         placeholder="Digite sua pergunta sobre química..." required rows="1"></textarea>
                     <div class="input-actions">
-                        <button type="submit" class="search-bottom-button" id="submitBtnBottom">
-                            <i class="fas fa-paper-plane send-icon">➤</i>
+                        <button type="submit" class="search-bottom-button" id="submitBtnBottom" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -145,9 +151,7 @@
         </div>
 
         <!-- Área de mensagens (inicialmente oculta) -->
-        <div class="app-container" id="chatContainer" style="display: none;">
-            <div class="chat-messages" id="chatMessages"></div>
-        </div>
+        <div class="app-container" id="chatContainer" style="display: none;"></div>
 
         <!-- Área do Quiz (inicialmente oculta) -->
         <div class="app-container" id="quizContainer" style="display: none;">
@@ -160,9 +164,11 @@
             <div class="quiz-options" id="quizOptions"></div>
             <div class="quiz-feedback" id="quizFeedback"></div>
             <div class="quiz-controls">
+                <button class="quiz-button" id="confirmAnswerBtn" style="display: none;">Confirmar Resposta</button>
                 <button class="quiz-button" id="nextQuestionBtn" style="display: none;">Próxima Pergunta</button>
                 <button class="quiz-button" id="finishQuizBtn" style="display: none;">Finalizar Quiz</button>
             </div>
+            <div id="quizResults" style="display: none;"></div>
         </div>
     </div>
 
@@ -175,7 +181,8 @@
             "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",
             "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",
             "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",
-            "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"
+            "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",
+            "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"
         ];
 
         let currentApiKeyIndex = 0;
@@ -193,6 +200,9 @@
         let currentQuestionIndex = 0;
         let quizScore = 0;
         let selectedOption = null;
+        let currentQuizId = null;
+        let answeredQuestions = [];
+        let quizCompleted = false;
 
         const elements = [
             { number: 1, symbol: "H", name: "Hidrogênio", mass: 1.008, category: "nao-metais", state: "gas", discovery: "1766", electron: "1s¹", description: "O elemento mais leve e abundante no universo." },
@@ -357,10 +367,22 @@
                 document.getElementById('chatContainer').style.display = 'none';
                 document.getElementById('quizContainer').style.display = 'none';
                 document.getElementById('toggleViewBtn').textContent = '▶ Jogar';
-                
-                // Esconder barra inferior e botão Novo Chat
+
+                // Esconder barra inferior
                 document.getElementById('bottomSearch').style.display = 'none';
-                document.getElementById('newChatBtnContainer').style.display = 'none';
+
+                // Mostrar barra do cabeçalho
+                document.getElementById('headerSearch').style.display = 'block';
+            } else if (isChatView) {
+                // Voltar para a tabela periódica
+                isChatView = false;
+                document.getElementById('periodic-table-container').style.display = 'block';
+                document.getElementById('chatContainer').style.display = 'none';
+                document.getElementById('quizContainer').style.display = 'none';
+                document.getElementById('toggleViewBtn').textContent = '▶ Jogar';
+                
+                // Esconder barra inferior
+                document.getElementById('bottomSearch').style.display = 'none';
                 
                 // Mostrar barra do cabeçalho
                 document.getElementById('headerSearch').style.display = 'block';
@@ -374,25 +396,28 @@
         async function startQuiz() {
             isQuizView = true;
             isChatView = false;
-            
+            quizCompleted = false;
+
             // Esconder tabela e chat, mostrar quiz
             document.getElementById('periodic-table-container').style.display = 'none';
             document.getElementById('chatContainer').style.display = 'none';
             document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('quizResults').style.display = 'none';
             document.getElementById('toggleViewBtn').textContent = 'Voltar';
-            
-            // Esconder barra inferior e botão Novo Chat
+
+            // Esconder barra inferior
             document.getElementById('bottomSearch').style.display = 'none';
-            document.getElementById('newChatBtnContainer').style.display = 'none';
-            
+
             // Esconder barra do cabeçalho
             document.getElementById('headerSearch').style.display = 'none';
-            
+
             // Resetar variáveis do quiz
             currentQuestionIndex = 0;
             quizScore = 0;
             selectedOption = null;
-            
+            answeredQuestions = [];
+            currentQuizId = `quiz_${Date.now()}`;
+
             // Gerar perguntas do quiz
             try {
                 const loadingDiv = document.createElement('div');
@@ -404,13 +429,36 @@
                     </div>
                 `;
                 document.getElementById('quizQuestion').appendChild(loadingDiv);
-                
+
                 quizQuestions = await generateQuizQuestions();
                 document.getElementById('quizQuestion').removeChild(loadingDiv);
+
+                // Salvar o quiz no histórico
+                const quizTitle = `Quiz de Química - ${new Date().toLocaleDateString()}`;
+                chatHistory[currentQuizId] = {
+                    messages: [],
+                    title: quizTitle,
+                    timestamp: Date.now(),
+                    isQuiz: true,
+                    quizData: {
+                        questions: quizQuestions,
+                        currentQuestionIndex: 0,
+                        score: 0,
+                        answeredQuestions: [],
+                        completed: false
+                    }
+                };
+                saveChatsToLocalStorage();
+                updateSearchHistory();
+
                 showQuestion();
             } catch (error) {
                 console.error('Erro ao gerar quiz:', error);
-                alert('Erro ao gerar o quiz. Por favor, tente novamente.');
+                document.getElementById('quizQuestion').innerHTML = `
+                    <div class="message-container bot-message-container">
+                        <div class="message-content bot-message-content">ERRO: todas as chaves falharam</div>
+                    </div>
+                `;
                 toggleView(); // Voltar para a tabela periódica em caso de erro
             }
         }
@@ -445,12 +493,12 @@
 
                     const data = await response.json();
                     const content = data.choices[0].message.content;
-                    
+
                     // Extrair o JSON da resposta
                     const jsonStart = content.indexOf('[');
                     const jsonEnd = content.lastIndexOf(']') + 1;
                     const jsonString = content.slice(jsonStart, jsonEnd);
-                    
+
                     return JSON.parse(jsonString);
 
                 } catch (error) {
@@ -470,10 +518,10 @@
 
             const question = quizQuestions[currentQuestionIndex];
             document.getElementById('quizQuestion').innerHTML = `<h3>${question.question}</h3>`;
-            
+
             const optionsContainer = document.getElementById('quizOptions');
             optionsContainer.innerHTML = '';
-            
+
             question.options.forEach((option, index) => {
                 const optionDiv = document.createElement('div');
                 optionDiv.className = 'quiz-option';
@@ -481,58 +529,96 @@
                     <input type="radio" name="quizOption" id="option${index}" value="${index}">
                     <label for="option${index}">${String.fromCharCode(65 + index)}) ${option}</label>
                 `;
-                optionDiv.querySelector('input').addEventListener('change', () => {
+
+                optionDiv.addEventListener('click', (e) => {
+                    // Impede que o evento se propague para o container
+                    if (e.target.tagName !== 'INPUT') {
+                        optionDiv.querySelector('input').checked = true;
+                    }
                     selectedOption = index;
+                    // Mostra o botão de confirmar resposta quando uma opção é selecionada
+                    document.getElementById('confirmAnswerBtn').style.display = 'inline-block';
                 });
                 optionsContainer.appendChild(optionDiv);
             });
-            
+
             document.getElementById('quizFeedback').innerHTML = '';
             document.getElementById('nextQuestionBtn').style.display = 'none';
             document.getElementById('finishQuizBtn').style.display = 'none';
-            
+            document.getElementById('confirmAnswerBtn').style.display = 'none';  // Esconde inicialmente
+
             document.getElementById('quizProgress').textContent = `Pergunta ${currentQuestionIndex + 1} de ${quizQuestions.length}`;
             document.getElementById('quizScore').textContent = `Pontuação: ${quizScore}`;
+
+            // Atualiza o estado do quiz no histórico
+            if (chatHistory[currentQuizId]) {
+                chatHistory[currentQuizId].quizData = {
+                    questions: quizQuestions,
+                    currentQuestionIndex: currentQuestionIndex,
+                    score: quizScore,
+                    answeredQuestions: answeredQuestions,
+                    completed: false
+                };
+                saveChatsToLocalStorage();
+            }
         }
 
-        // Função para verificar a resposta selecionada
         function checkAnswer() {
-            if (selectedOption === null) {
-                alert('Por favor, selecione uma opção antes de verificar.');
+            if (selectedOption === null || answeredQuestions.includes(currentQuestionIndex)) {
                 return;
             }
 
             const question = quizQuestions[currentQuestionIndex];
             const isCorrect = selectedOption === question.answer;
-            
+
+            // Marca a questão como respondida
+            answeredQuestions.push(currentQuestionIndex);
+
             if (isCorrect) {
                 quizScore++;
                 document.getElementById('quizScore').textContent = `Pontuação: ${quizScore}`;
             }
-            
+
             const feedbackDiv = document.getElementById('quizFeedback');
             feedbackDiv.innerHTML = `
                 <p class="${isCorrect ? 'correct' : 'incorrect'}">
                     ${isCorrect ? '✅ Correto!' : '❌ Incorreto!'}
                 </p>
+                <p>Resposta correta: ${String.fromCharCode(65 + question.answer)}) ${question.options[question.answer]}</p>
                 <p>${question.explanation}</p>
             `;
-            
+
             // Desabilitar todas as opções
             document.querySelectorAll('.quiz-option input').forEach(input => {
                 input.disabled = true;
             });
-            
+
+            // Esconde o botão de confirmar e mostra o de próxima pergunta
+            document.getElementById('confirmAnswerBtn').style.display = 'none';
+
             // Mostrar botão de próxima pergunta ou finalizar
             if (currentQuestionIndex < quizQuestions.length - 1) {
                 document.getElementById('nextQuestionBtn').style.display = 'inline-block';
             } else {
                 document.getElementById('finishQuizBtn').style.display = 'inline-block';
             }
+
+            // Atualiza o estado do quiz no histórico
+            if (chatHistory[currentQuizId]) {
+                chatHistory[currentQuizId].quizData = {
+                    questions: quizQuestions,
+                    currentQuestionIndex: currentQuestionIndex,
+                    score: quizScore,
+                    answeredQuestions: answeredQuestions,
+                    completed: currentQuestionIndex >= quizQuestions.length - 1
+                };
+                saveChatsToLocalStorage();
+            }
         }
 
         // Função para avançar para a próxima pergunta
         function nextQuestion() {
+            checkAnswer();
             currentQuestionIndex++;
             selectedOption = null;
             showQuestion();
@@ -540,9 +626,12 @@
 
         // Função para finalizar o quiz
         function finishQuiz() {
+            checkAnswer();
+            quizCompleted = true;
+
             const percentage = Math.round((quizScore / quizQuestions.length) * 100);
             let message = '';
-            
+
             if (percentage >= 90) {
                 message = 'Excelente! Você é um mestre da química!';
             } else if (percentage >= 70) {
@@ -552,49 +641,61 @@
             } else {
                 message = 'Não desanime! A química é desafiadora, mas com prática você melhora.';
             }
-            
-            document.getElementById('quizQuestion').innerHTML = `
-                <h3>Quiz Concluído!</h3>
-                <p>Sua pontuação final: ${quizScore} de ${quizQuestions.length} (${percentage}%)</p>
+
+            // Mostra os resultados finais
+            document.getElementById('quizQuestion').style.display = 'none';
+            document.getElementById('quizOptions').style.display = 'none';
+            document.getElementById('quizFeedback').style.display = 'none';
+            document.getElementById('quizResults').style.display = 'block';
+
+            let resultsHTML = `
+                <h3>Resultado do Quiz</h3>
+                <p>Sua pontuação final: <strong>${quizScore} de ${quizQuestions.length}</strong> (${percentage}%)</p>
                 <p>${message}</p>
+                <h4>Relatório Detalhado:</h4>
+                <div class="quiz-report">
             `;
-            
-            document.getElementById('quizOptions').innerHTML = '';
-            document.getElementById('quizFeedback').innerHTML = '';
-            document.getElementById('nextQuestionBtn').style.display = 'none';
-            document.getElementById('finishQuizBtn').style.display = 'inline-block';
-        }
 
-        // Função para mostrar a barra de pesquisa do cabeçalho no modo chat
-        function showHeaderSearchInChat() {
-            const headerSearch = document.getElementById('headerSearch');
-            headerSearch.style.display = 'block';
-            headerSearch.style.position = 'fixed';
-            headerSearch.style.top = '50%';
-            headerSearch.style.left = '50%';
-            headerSearch.style.transform = 'translate(-50%, -50%)';
-            headerSearch.style.zIndex = '1001';
-            headerSearch.style.width = '600px';
-            headerSearch.style.maxWidth = '90%';
+            quizQuestions.forEach((question, index) => {
+                const isCorrect = answeredQuestions.includes(index) &&
+                    selectedOption === question.answer;
+                const userAnswer = answeredQuestions.includes(index) ?
+                    question.options[selectedOption] : 'Não respondida';
 
-            document.getElementById('perguntaInput').focus();
-        }
+                resultsHTML += `
+                    <div class="quiz-report-item ${isCorrect ? 'correct' : 'incorrect'}">
+                        <h5>Pergunta ${index + 1}: ${question.question}</h5>
+                        <p>Sua resposta: ${userAnswer}</p>
+                        <p>Resposta correta: ${question.options[question.answer]}</p>
+                        <p>Explicação: ${question.explanation}</p>
+                    </div>
+                `;
+            });
 
-        // Função para esconder a barra de pesquisa do cabeçalho no modo chat
-        function hideHeaderSearchInChat() {
-            const headerSearch = document.getElementById('headerSearch');
-            headerSearch.style.display = 'none';
-            headerSearch.style.position = '';
-            headerSearch.style.top = '';
-            headerSearch.style.left = '';
-            headerSearch.style.transform = '';
-            headerSearch.style.zIndex = '';
-            headerSearch.style.width = '';
+            resultsHTML += `</div>`;
+            document.getElementById('quizResults').innerHTML = resultsHTML;
+
+            // Atualiza o quiz no histórico como concluído
+            if (chatHistory[currentQuizId]) {
+                chatHistory[currentQuizId].quizData = {
+                    questions: quizQuestions,
+                    currentQuestionIndex: currentQuestionIndex,
+                    score: quizScore,
+                    answeredQuestions: answeredQuestions,
+                    completed: true
+                };
+                saveChatsToLocalStorage();
+                updateSearchHistory();
+            }
         }
 
         // Função principal para enviar mensagens
         async function sendMessage(message, isBottom = false) {
-            if (isProcessing || !message.trim()) return;
+            if (isProcessing || !message.trim()) {
+                const input = isBottom ? document.getElementById('perguntaInputBottom') : document.getElementById('perguntaInput');
+                showInputError(input);
+                return;
+            }
 
             isProcessing = true;
             const input = isBottom ? document.getElementById('perguntaInputBottom') : document.getElementById('perguntaInput');
@@ -615,13 +716,13 @@
                 document.getElementById('periodic-table-container').style.display = 'none';
                 document.getElementById('chatContainer').style.display = 'block';
                 document.getElementById('quizContainer').style.display = 'none';
-                document.getElementById('toggleViewBtn').textContent = 'Modo Tabela';
+                document.getElementById('toggleViewBtn').textContent = 'Voltar';
             }
 
-            const chatMessages = document.getElementById('chatMessages');
+            const chatContainer = document.getElementById('chatContainer');
 
             // Adiciona mensagem do usuário
-            chatMessages.innerHTML += `
+            chatContainer.innerHTML += `
                 <div class="message-container user-message-container">
                     <div class="message-content user-message-content">${escapeHtml(message)}</div>
                 </div>
@@ -639,7 +740,7 @@
             (isBottom ? document.getElementById('perguntaInputBottom') : document.getElementById('perguntaInput')).focus();
 
             const loadingId = 'loading-' + Date.now();
-            chatMessages.innerHTML += `
+            chatContainer.innerHTML += `
                 <div id="${loadingId}" class="loading-message">
                     <div class="loading-content">
                         <div class="loading-spinner"></div>
@@ -653,7 +754,7 @@
                 document.getElementById(loadingId).remove();
 
                 // Adiciona resposta do bot
-                chatMessages.innerHTML += `
+                chatContainer.innerHTML += `
                     <div class="message-container bot-message-container">
                         <div class="message-content bot-message-content">${marked.parse(response)}</div>
                     </div>
@@ -664,9 +765,9 @@
 
             } catch (error) {
                 document.getElementById(loadingId).remove();
-                chatMessages.innerHTML += `
+                chatContainer.innerHTML += `
                     <div class="message-container bot-message-container">
-                        <div class="message-content bot-message-content" style="color:red">
+                        <div class="message-content bot-message-content">
                             ERRO: ${escapeHtml(error.message.replace('Error: ', ''))}
                         </div>
                     </div>
@@ -715,13 +816,13 @@
                     continue;
                 }
             }
-            throw new Error("Todas as chaves falharam");
+            throw new Error("todas as chaves falharam");
         }
 
         // Funções auxiliares
         function scrollToBottomInstant() {
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
         function adjustTextareaHeight(textarea) {
@@ -809,7 +910,11 @@
                     historyItem.className = 'search-history-item';
                     historyItem.textContent = chatData.title;
                     historyItem.addEventListener('click', () => {
-                        switchToChat(chatId);
+                        if (chatData.isQuiz) {
+                            switchToQuiz(chatId);
+                        } else {
+                            switchToChat(chatId);
+                        }
                         document.getElementById('searchHistory').style.display = 'none';
                         if (isChatView) {
                             hideHeaderSearchInChat();
@@ -832,23 +937,23 @@
             if (!chatHistory[chatId]) return;
 
             currentChatId = chatId;
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = '';
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = '';
 
             // Adiciona todas as mensagens do chat selecionado
             chatHistory[chatId].messages.forEach(msg => {
                 if (msg.is_user) {
-                    chatMessages.innerHTML += `
-                    <div class="message-container user-message-container">
-                        <div class="message-content user-message-content">${escapeHtml(msg.content)}</div>
-                    </div>
-                `;
+                    chatContainer.innerHTML += `
+                        <div class="message-container user-message-container">
+                            <div class="message-content user-message-content">${escapeHtml(msg.content)}</div>
+                        </div>
+                    `;
                 } else {
-                    chatMessages.innerHTML += `
-                    <div class="message-container bot-message-container">
-                        <div class="message-content bot-message-content">${marked.parse(msg.content)}</div>
-                    </div>
-                `;
+                    chatContainer.innerHTML += `
+                        <div class="message-container bot-message-container">
+                            <div class="message-content bot-message-content">${marked.parse(msg.content)}</div>
+                        </div>
+                    `;
                 }
             });
 
@@ -863,8 +968,94 @@
                 document.getElementById('periodic-table-container').style.display = 'none';
                 document.getElementById('chatContainer').style.display = 'block';
                 document.getElementById('quizContainer').style.display = 'none';
-                document.getElementById('toggleViewBtn').textContent = 'Modo Tabela';
+                document.getElementById('toggleViewBtn').textContent = 'Voltar';
             }
+        }
+
+        function switchToQuiz(quizId) {
+            if (!chatHistory[quizId] || !chatHistory[quizId].isQuiz) return;
+
+            currentQuizId = quizId;
+            const quizData = chatHistory[quizId].quizData;
+
+            isQuizView = true;
+            isChatView = false;
+
+            // Configura o quiz com os dados salvos
+            quizQuestions = quizData.questions;
+            currentQuestionIndex = quizData.currentQuestionIndex;
+            quizScore = quizData.score;
+            answeredQuestions = quizData.answeredQuestions || [];
+            quizCompleted = quizData.completed || false;
+
+            // Mostra o quiz
+            document.getElementById('periodic-table-container').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('toggleViewBtn').textContent = 'Voltar';
+
+            // Esconde barras desnecessárias
+            document.getElementById('bottomSearch').style.display = 'none';
+            document.getElementById('headerSearch').style.display = 'none';
+
+            // Mostra a pergunta atual ou os resultados finais
+            if (quizCompleted) {
+                document.getElementById('quizQuestion').style.display = 'none';
+                document.getElementById('quizOptions').style.display = 'none';
+                document.getElementById('quizFeedback').style.display = 'none';
+                document.getElementById('quizResults').style.display = 'block';
+                showQuizResults(quizData);
+            } else {
+                document.getElementById('quizQuestion').style.display = 'block';
+                document.getElementById('quizOptions').style.display = 'block';
+                document.getElementById('quizFeedback').style.display = 'block';
+                document.getElementById('quizResults').style.display = 'none';
+                showQuestion();
+            }
+        }
+
+        function showQuizResults(quizData) {
+            const percentage = Math.round((quizData.score / quizData.questions.length) * 100);
+            let message = '';
+
+            if (percentage >= 90) {
+                message = 'Excelente! Você é um mestre da química!';
+            } else if (percentage >= 70) {
+                message = 'Muito bom! Você tem um bom conhecimento de química.';
+            } else if (percentage >= 50) {
+                message = 'Bom trabalho! Continue estudando para melhorar.';
+            } else {
+                message = 'Não desanime! A química é desafiadora, mas com prática você melhora.';
+            }
+
+            let resultsHTML = `
+                <h3>Resultado do Quiz</h3>
+                <p>Sua pontuação final: <strong>${quizData.score} de ${quizData.questions.length}</strong> (${percentage}%)</p>
+                <p>${message}</p>
+                <h4>Relatório Detalhado:</h4>
+                <div class="quiz-report">
+            `;
+
+            quizData.questions.forEach((question, index) => {
+                const userAnswerIndex = quizData.answeredQuestions.includes(index) ?
+                    selectedOption : null;
+                const isCorrect = userAnswerIndex !== null &&
+                    userAnswerIndex === question.answer;
+                const userAnswer = userAnswerIndex !== null ?
+                    question.options[userAnswerIndex] : 'Não respondida';
+
+                resultsHTML += `
+                    <div class="quiz-report-item ${isCorrect ? 'correct' : 'incorrect'}">
+                        <h5>Pergunta ${index + 1}: ${question.question}</h5>
+                        <p>Sua resposta: ${userAnswer}</p>
+                        <p>Resposta correta: ${question.options[question.answer]}</p>
+                        <p>Explicação: ${question.explanation}</p>
+                    </div>
+                `;
+            });
+
+            resultsHTML += `</div>`;
+            document.getElementById('quizResults').innerHTML = resultsHTML;
         }
 
         function clearAllChats() {
@@ -874,7 +1065,7 @@
             chatHistory = {};
             currentChatId = null;
             localStorage.removeItem('atomichat_history');
-            document.getElementById('chatMessages').innerHTML = '';
+            document.getElementById('chatContainer').innerHTML = '';
             updateSearchHistory();
 
             // Esconde a barra de pesquisa inferior se estiver visível
@@ -1152,6 +1343,20 @@
             return states[state] || state;
         }
 
+        // Funções adicionais para melhorar a usabilidade
+        function showInputError(inputElement) {
+            inputElement.style.border = '1px solid red';
+            setTimeout(() => {
+                inputElement.style.border = '';
+            }, 2000);
+        }
+
+        function hideHeaderSearchInChat() {
+            if (isChatView) {
+                document.getElementById('headerSearch').style.display = 'none';
+            }
+        }
+
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             try {
@@ -1159,32 +1364,33 @@
                 createLanthanidesActinides();
                 loadChatsFromLocalStorage();
 
-                // Configuração dos textareas
+                // Configuração do textarea principal
                 const input = document.getElementById('perguntaInput');
-                input.addEventListener('input', function () {
+                input.addEventListener('input', function() {
                     adjustTextareaHeight(this);
                 });
 
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        const question = input.value.trim();
+                        const question = this.value.trim();
                         if (question) {
                             sendMessage(question);
                         }
                     }
                 });
 
+                // Configuração do textarea inferior
                 const inputBottom = document.getElementById('perguntaInputBottom');
-                inputBottom.addEventListener('input', function () {
+                inputBottom.addEventListener('input', function() {
                     adjustTextareaHeight(this);
                     document.getElementById('submitBtnBottom').disabled = this.value.trim() === '';
                 });
 
-                inputBottom.addEventListener('keydown', (e) => {
+                inputBottom.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        const question = inputBottom.value.trim();
+                        const question = this.value.trim();
                         if (question) {
                             sendMessage(question, true);
                         }
@@ -1192,17 +1398,17 @@
                 });
 
                 // Configuração dos formulários
-                document.getElementById('chatForm').addEventListener('submit', function (e) {
+                document.getElementById('chatForm').addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const question = document.getElementById('perguntaInput').value.trim();
+                    const question = input.value.trim();
                     if (question) {
                         sendMessage(question);
                     }
                 });
 
-                document.getElementById('chatFormBottom').addEventListener('submit', function (e) {
+                document.getElementById('chatFormBottom').addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const question = document.getElementById('perguntaInputBottom').value.trim();
+                    const question = inputBottom.value.trim();
                     if (question) {
                         sendMessage(question, true);
                     }
@@ -1211,26 +1417,15 @@
                 // Configuração do botão de alternar visualização
                 document.getElementById('toggleViewBtn').addEventListener('click', toggleView);
 
-                // Configuração do botão "Novo Chat"
-                document.getElementById('newChatBtn').addEventListener('click', function () {
-                    showHeaderSearchInChat();
-                });
-
                 // Configuração do histórico de pesquisa
                 document.getElementById('perguntaInput').addEventListener('focus', () => {
                     document.getElementById('searchHistory').style.display = 'block';
                 });
 
                 // Configuração dos botões do quiz
+                document.getElementById('confirmAnswerBtn').addEventListener('click', checkAnswer);
                 document.getElementById('nextQuestionBtn').addEventListener('click', nextQuestion);
                 document.getElementById('finishQuizBtn').addEventListener('click', toggleView);
-
-                // Adiciona evento para verificar resposta quando uma opção é selecionada
-                document.addEventListener('click', (e) => {
-                    if (e.target.closest('.quiz-option') && isQuizView) {
-                        checkAnswer();
-                    }
-                });
 
                 document.addEventListener('click', (e) => {
                     const searchHistory = document.getElementById('searchHistory');
@@ -1259,5 +1454,4 @@
         });
     </script>
 </body>
-
 </html>

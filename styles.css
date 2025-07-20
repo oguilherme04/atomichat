@@ -223,45 +223,16 @@ body {
     color: var(--white);
 }
 
-/* Botão Novo Chat - ALTERAÇÃO SOLICITADA AQUI */
-.new-chat-btn-container {
-    position: fixed;
-    top: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-}
-
-.new-chat-btn {
-    padding: 10px 20px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.new-chat-btn:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
 /* Barra de pesquisa inferior */
 .search-bottom {
-    position: relative;
-    bottom: -525px;
+    position: fixed;
+    bottom: 0;
     left: 0;
     right: 0;
-    padding: 2px 20px;
+    padding: 10px 20px;
     z-index: 1000;
     display: none;
-    background-color: #2a2a2d;
+    background-color: var(--bg-dark);
     border-top: 1px solid var(--border-color);
 }
 
@@ -332,6 +303,7 @@ body {
     align-items: center;
     gap: 8px;
     padding-left: 8px;
+    padding-top: 55px;
     height: 100%;
 }
 
@@ -350,11 +322,13 @@ body {
     position: absolute;
     right: 15px;
     bottom: 15px;
+    padding: 0;
 }
 
 .search-bottom-button:disabled {
     background-color: var(--highlight-dark);
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
 .search-bottom-button:not(:disabled):hover {
@@ -362,8 +336,10 @@ body {
     transform: scale(1.05);
 }
 
-.search-bottom-button .send-icon {
-    font-size: 16px;
+.search-bottom-button svg {
+    width: 18px;
+    height: 18px;
+    color: white;
 }
 
 /* Área de mensagens */
@@ -375,26 +351,21 @@ body {
     margin-bottom: 80px;
     transition: padding-bottom 0.3s ease;
     max-width: 1200px;
-    margin: 0 auto;
-}
-
-.chat-messages {
+    min-height: calc(100vh - 280px);
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 20px;
-    overflow-y: auto;
-    height: calc(100vh - 200px);
 }
 
 /* Estilos do Quiz */
 #quizContainer {
     max-width: 800px;
-    margin: 0 auto;
+    margin: 100px auto 0;
     padding: 20px;
     background-color: var(--bg-darker);
     border-radius: 15px;
     box-shadow: var(--box-shadow-lg);
+    min-height: calc(100vh - 280px);
 }
 
 .quiz-header {
@@ -426,19 +397,20 @@ body {
 .quiz-options {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
     margin-bottom: 25px;
 }
 
 .quiz-option {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
+    padding: 15px;
     background-color: var(--bg-dark);
     border-radius: var(--border-radius-sm);
     cursor: pointer;
     transition: var(--transition);
     border: 1px solid var(--border-color);
+    margin-bottom: 8px;
 }
 
 .quiz-option:hover {
@@ -500,6 +472,33 @@ body {
     transform: translateY(-2px);
 }
 
+#quizResults {
+    padding: 20px;
+    background-color: var(--bg-dark);
+    border-radius: var(--border-radius-sm);
+    margin-top: 20px;
+}
+
+.quiz-report-item {
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-darker);
+}
+
+.quiz-report-item.correct {
+    border-left: 4px solid var(--success-color);
+}
+
+.quiz-report-item.incorrect {
+    border-left: 4px solid var(--danger-color);
+}
+
+.quiz-report-item h5 {
+    margin-top: 0;
+    color: var(--primary-light);
+}
+
 /* Mensagens */
 .message-container {
     display: flex;
@@ -534,10 +533,10 @@ body {
 }
 
 .bot-message-content {
-    background-color: var(--white);
-    color: var(--text-color);
+    background-color: #3a3a3d;
+    color: var(--text-primary);
     border-bottom-left-radius: 5px;
-    border: 1px solid #eee;
+    border: 1px solid #444;
     min-width: 200px;
 }
 
@@ -551,12 +550,12 @@ body {
 }
 
 .loading-content {
-    background-color: var(--white);
+    background-color: #3a3a3d;
     padding: 15px 20px;
     border-radius: 18px;
     border-bottom-left-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border: 1px solid #eee;
+    border: 1px solid #444;
     display: flex;
     align-items: center;
 }
@@ -590,7 +589,7 @@ body {
 
 .bot-message-content strong {
     font-weight: bold;
-    color: var(--primary-light);
+    color: #FFFFFF;
 }
 
 .bot-message-content em {
@@ -609,23 +608,25 @@ body {
 
 .bot-message-content code {
     font-family: monospace;
-    background-color: #f0f0f0;
+    background-color: #2a2a2d;
     padding: 0.2em 0.4em;
     border-radius: 3px;
+    color: #f0f0f0;
 }
 
 .bot-message-content pre {
-    background-color: #f5f5f5;
+    background-color: #2a2a2d;
     padding: 0.8em;
     border-radius: 4px;
     overflow-x: auto;
+    color: #f0f0f0;
 }
 
 .bot-message-content blockquote {
-    border-left: 3px solid #ddd;
+    border-left: 3px solid #555;
     padding-left: 1em;
     margin-left: 0;
-    color: #666;
+    color: #b0b0b0;
 }
 
 .bot-message-content h1,
@@ -1164,70 +1165,18 @@ body {
     display: block;
 }
 
-/* Estilo para a barra de pesquisa do cabeçalho no modo chat */
-#headerSearch.chat-mode {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    max-width: 90%;
-    z-index: 1001;
-    background-color: var(--bg-darker);
-    padding: 15px;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-#headerSearch.chat-mode textarea {
-    margin: 0;
-    width: 100%;
-}
-
-#headerSearch.chat-mode .search-history {
-    left: 0;
-    right: 0;
-    width: 100%;
-}
-
-/* Estilo para o container do botão Novo Chat */
-.search-bottom .new-chat-btn-container {
-    position: absolute;
-    top: -45px;
-    right: 20px;
-}
-
-/* Estilo para o botão Novo Chat */
-.search-bottom .new-chat-btn {
-    padding: 8px 16px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.search-bottom .new-chat-btn:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
 /* Container principal */
 #main-content {
     position: relative;
     min-height: calc(100vh - 180px);
-    background-color: #2a2a2d; /* Cor de fundo padrão */
+    background-color: #2a2a2d;
 }
 
 /* Container da tabela periódica */
 #periodic-table-container {
     width: 100%;
     padding: 20px;
-    display: block; /* Visível por padrão */
+    display: block;
 }
 
 /* Container do chat */
@@ -1252,80 +1201,8 @@ body {
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-/* Botão Novo Chat - CENTRALIZADO ACIMA DA BARRA */
-.new-chat-btn-container {
-    position: fixed;
-    top: 120px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.new-chat-btn {
-    padding: 10px 20px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    margin-left: 40%;
-    margin-right: 40%;
-}
-
-.new-chat-btn:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-#headerSearch.chat-mode, .new-chat-btn-container {
-    animation: fadeInUp 0.4s ease-out;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translate(-50%, -40%);
-    }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%);
-    }
-}
-
-/* Barra CENTRALIZADA e FIXA (sem movimento) */
-#headerSearch.chat-mode {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) !important; /* !important garante que não muda */
-    width: 600px;
-    max-width: 90%;
-    z-index: 1001;
-    background-color: var(--bg-darker);
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    pointer-events: auto; /* Permite interação */
+    pointer-events: auto;
     
-    /* Garante que não se mexe no hover */
     transition: none !important;
     animation: none !important;
-}
-
-/* Container do botão - também fixo */
-.new-chat-btn-container {
-    position: fixed;
-    top: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1002;
-    transition: none !important;
 }

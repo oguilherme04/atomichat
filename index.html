@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <title>ATOMICHAT - Assistente de Química</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.85em%22 x=%2250%22 font-size=%2285%22 text-anchor=%22middle%22>⚛️</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <!-- Cabeçalho fixo com barra de pesquisa -->
+    <header class="header" id="mainHeader">
+        <div class="header-logo">
+            <div class="logo-robot">🤖</div>
+            <h1 class="logo">AtomiChat</h1>
+        </div>
+
+        <div class="header-search" id="headerSearch">
+            <form method="POST" id="chatForm" class="header-search-container">
+                <textarea name="pergunta" id="perguntaInput" placeholder="Digite sua pergunta sobre química..." required
+                    rows="1"></textarea>
+                <button type="submit" class="search-submit-button" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+                <div class="search-history" id="searchHistory">
+                    <div class="search-history-empty" id="emptyHistory">Nenhum histórico de pesquisa</div>
+                    <div class="search-history-clear" id="clearHistory">Limpar histórico</div>
+                </div>
+            </form>
+        </div>
+
+        <button class="header-button" id="apiConfigBtn">Aviso</button>
+        <button class="header-button" id="toggleViewBtn">▶ Jogar</button>
+    </header>
+
+    <!-- Modal de configuração da API -->
+    <div id="apiModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Configuração da API</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Para usar o AtomiChat, você precisa configurar uma chave API do OpenRouter.</p>
+                <ol>
+                    <li>Acesse <a href="https://openrouter.ai/settings/keys"
+                            target="_blank">https://openrouter.ai/settings/keys</a></li>
+                    <li>Crie uma conta ou faça login</li>
+                    <li>Gere uma nova chave API</li>
+                    <li>Cole a chave no campo abaixo</li>
+                </ol>
+
+                <div class="api-input-container">
+                    <label for="apiKeyInput">Chave API:</label>
+                    <input type="password" id="apiKeyInput" placeholder="Cole sua chave API aqui">
+                    <button id="saveApiKey">Salvar Chave</button>
+                </div>
+
+                <div class="api-status" id="apiStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de pesquisa que aparece na parte inferior após a primeira pergunta -->
+    <div class="search-bottom" id="bottomSearch">
+        <div class="search-bottom-container">
+            <form method="POST" id="chatFormBottom" class="search-bottom-form">
+                <div class="input-field">
+                    <textarea name="pergunta" id="perguntaInputBottom"
+                        placeholder="Digite sua pergunta sobre química..." required rows="1"></textarea>
+                    <div class="input-actions">
+                        <button type="submit" class="search-bottom-button" id="submitBtnBottom" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Área principal que alterna entre tabela periódica e chat -->
+    <div id="main-content">
+        <!-- Área da tabela periódica -->
+        <div id="periodic-table-container">
+            <div id="periodic-table">
+                <div id="enlarged-element-container" class="enlarged-element-container"></div>
+            </div>
+            <div id="lanthanides-actinides"></div>
+
+            <div id="element-details">
+                <h2 id="detail-title">Elemento</h2>
+                <div class="details-container">
+                    <div class="detail-column">
+                        <div class="detail-row">
+                            <span class="detail-label">Número Atômico:</span>
+                            <span class="detail-value" id="detail-number"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Símbolo:</span>
+                            <span class="detail-value" id="detail-symbol"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Massa Atômica:</span>
+                            <span class="detail-value" id="detail-mass"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Série:</span>
+                            <span class="detail-value" id="detail-category"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Estado Físico:</span>
+                            <span class="detail-value" id="detail-state"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Ponto de Fusão:</span>
+                            <span class="detail-value" id="detail-melt"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Ponto de Ebulição:</span>
+                            <span class="detail-value" id="detail-boil"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Densidade:</span>
+                            <span class="detail-value" id="detail-density"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Config. Eletrônica:</span>
+                            <span class="detail-value" id="detail-electron"></span>
+                        </div>
+                    </div>
+                    <div class="detail-column">
+                        <div class="detail-row">
+                            <span class="detail-label">Eletronegatividade:</span>
+                            <span class="detail-value" id="detail-electronegativity"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Eletroafinidade:</span>
+                            <span class="detail-value" id="detail-electronAffinity"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Energ. Ionização:</span>
+                            <span class="detail-value" id="detail-ionizationEnergy"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Raio Atômico:</span>
+                            <span class="detail-value" id="detail-atomicRadius"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Condut. Térmica:</span>
+                            <span class="detail-value" id="detail-thermalConductivity"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Condut. Elétrica:</span>
+                            <span class="detail-value" id="detail-electricalConductivity"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Calor Específico:</span>
+                            <span class="detail-value" id="detail-specificHeat"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Ano Descoberto:</span>
+                            <span class="detail-value" id="detail-discoveryYear"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">País Descoberto:</span>
+                            <span class="detail-value" id="detail-discoveredBy"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de mensagens (inicialmente oculta) -->
+        <div class="app-container" id="chatContainer" style="display: none;"></div>
+
+        <!-- Área do Quiz (inicialmente oculta) -->
+        <div class="app-container" id="quizContainer" style="display: none;">
+            <div class="quiz-header">
+                <h2>Quiz de Química</h2>
+                <div class="quiz-progress" id="quizProgress">Pergunta 1 de 10</div>
+                <div class="quiz-score" id="quizScore">Pontuação: 0</div>
+            </div>
+            <div class="quiz-question" id="quizQuestion"></div>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="quiz-feedback" id="quizFeedback"></div>
+            <div class="quiz-controls">
+                <button class="quiz-button" id="confirmAnswerBtn" style="display: none;">Confirmar Resposta</button>
+                <button class="quiz-button" id="nextQuestionBtn" style="display: none;">Próxima Pergunta</button>
+            </div>
+            <div id="quizResults" style="display: none;">
+                <h3 id="quizFinalScore"></h3>
+                <p id="quizFinalMessage"></p>
+                <div class="quiz-final-buttons">
+                    <button class="quiz-button" id="backToTableBtn">Voltar para Tabela</button>
+                    <button class="quiz-button" id="newQuizBtn">Novo Quiz</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações da API
+        let userApiKey = localStorage.getItem('atomichat_api_key') || '';
+        let isProcessing = false;
+        let firstMessageSent = false;
+        const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+        const MODEL_NAME = "deepseek/deepseek-r1:free";
+        let currentChatId = null;
+        let chatHistory = {};
+        let isChatView = false;
+        let isQuizView = false;
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let quizScore = 0;
+        let selectedOption = null;
+        let currentQuizId = null;
+        let answeredQuestions = [];
+        let quizCompleted = false;
+
+        const elements = [
+            { number: 1, symbol: "H", name: "Hidrogênio", mass: 1.008, category: "nao-metais", state: "gas", discovery: "1766", electron: "1s¹", description: "O elemento mais leve e abundante no universo.", melt: -259.16, boil: -252.87, density: 0.00008988, electronConfiguration: "1s¹", electronegativity: 2.20, electronAffinity: 72.8, ionizationEnergy: 1312.0, atomicRadius: 120, thermalConductivity: 0.1805, electricalConductivity: null, specificHeat: 14.304, discoveryYear: 1766, discoveredBy: "Henry Cavendish" },
+            { number: 2, symbol: "He", name: "Hélio", mass: 4.0026, category: "gases-nobres", state: "gas", discovery: "1868", electron: "1s²", description: "Gás nobre usado em balões e ressonância magnética.", melt: -272.2, boil: -268.93, density: 0.0001785, electronConfiguration: "1s²", electronegativity: null, electronAffinity: 0, ionizationEnergy: 2372.3, atomicRadius: 140, thermalConductivity: 0.1513, electricalConductivity: null, specificHeat: 5.193, discoveryYear: 1868, discoveredBy: "Pierre Janssen" },
+            { number: 3, symbol: "Li", name: "Lítio", mass: 6.94, category: "metais-alcalinos", state: "solid", discovery: "1817", electron: "[He] 2s¹", description: "Metal alcalino leve usado em baterias.", melt: 180.50, boil: 1342, density: 0.534, electronConfiguration: "[He] 2s¹", electronegativity: 0.98, electronAffinity: 59.6, ionizationEnergy: 520.2, atomicRadius: 182, thermalConductivity: 85, electricalConductivity: 11, specificHeat: 3.58, discoveryYear: 1817, discoveredBy: "Johan August Arfwedson" },
+            { number: 4, symbol: "Be", name: "Berílio", mass: 9.0122, category: "alcalino-terrosos", state: "solid", discovery: "1798", electron: "[He] 2s²", description: "Metal alcalino-terroso usado em ligas avançadas.", melt: 1287, boil: 2470, density: 1.85, electronConfiguration: "[He] 2s²", electronegativity: 1.57, electronAffinity: 0, ionizationEnergy: 899.5, atomicRadius: 153, thermalConductivity: 200, electricalConductivity: 25, specificHeat: 1.82, discoveryYear: 1798, discoveredBy: "Louis Nicolas Vauquelin" },
+            { number: 5, symbol: "B", name: "Boro", mass: 10.81, category: "pos-transicao", state: "solid", discovery: "1808", electron: "[He] 2s² 2p¹", description: "Semimetal usado em fibra de vidro e semicondutores.", melt: 2075, boil: 4000, density: 2.34, electronConfiguration: "[He] 2s² 2p¹", electronegativity: 2.04, electronAffinity: 26.7, ionizationEnergy: 800.6, atomicRadius: 192, thermalConductivity: 27, electricalConductivity: 0.0001, specificHeat: 1.03, discoveryYear: 1808, discoveredBy: "Louis-Josef Gay-Lussac" },
+            { number: 6, symbol: "C", name: "Carbono", mass: 12.011, category: "nao-metais", state: "solid", discovery: "Antiguidade", electron: "[He] 2s² 2p²", description: "Base de toda a vida orgânica na Terra.", melt: 3550, boil: 4027, density: 2.267, electronConfiguration: "[He] 2s² 2p²", electronegativity: 2.55, electronAffinity: 153.9, ionizationEnergy: 1086.5, atomicRadius: 170, thermalConductivity: 140, electricalConductivity: 0.061, specificHeat: 0.709, discoveryYear: "Antiguidade", discoveredBy: "Desconhecido" },
+            { number: 7, symbol: "N", name: "Nitrogênio", mass: 14.007, category: "nao-metais", state: "gas", discovery: "1772", electron: "[He] 2s² 2p³", description: "Gás que compõe 78% da atmosfera terrestre.", melt: -210.1, boil: -195.79, density: 0.001251, electronConfiguration: "[He] 2s² 2p³", electronegativity: 3.04, electronAffinity: 7, ionizationEnergy: 1402.3, atomicRadius: 155, thermalConductivity: 0.02583, electricalConductivity: null, specificHeat: 1.04, discoveryYear: 1772, discoveredBy: "Daniel Rutherford" },
+            { number: 8, symbol: "O", name: "Oxigênio", mass: 15.999, category: "nao-metais", state: "gas", discovery: "1774", electron: "[He] 2s² 2p⁴", description: "Gás essencial para a respiração e combustão.", melt: -218.79, boil: -182.96, density: 0.001429, electronConfiguration: "[He] 2s² 2p⁴", electronegativity: 3.44, electronAffinity: 141, ionizationEnergy: 1313.9, atomicRadius: 152, thermalConductivity: 0.02658, electricalConductivity: null, specificHeat: 0.918, discoveryYear: 1774, discoveredBy: "Joseph Priestley" },
+            { number: 9, symbol: "F", name: "Flúor", mass: 18.998, category: "nao-metais", state: "gas", discovery: "1886", electron: "[He] 2s² 2p⁵", description: "O elemento mais eletronegativo, usado em pastas de dente.", melt: -219.67, boil: -188.11, density: 0.001696, electronConfiguration: "[He] 2s² 2p⁵", electronegativity: 3.98, electronAffinity: 328, ionizationEnergy: 1681.0, atomicRadius: 135, thermalConductivity: 0.0277, electricalConductivity: null, specificHeat: 0.824, discoveryYear: 1886, discoveredBy: "Henri Moissan" },
+            { number: 10, symbol: "Ne", name: "Neônio", mass: 20.180, category: "gases-nobres", state: "gas", discovery: "1898", electron: "[He] 2s² 2p⁶", description: "Gás nobre usado em sinais luminosos.", melt: -248.59, boil: -246.08, density: 0.0008999, electronConfiguration: "[He] 2s² 2p⁶", electronegativity: null, electronAffinity: 0, ionizationEnergy: 2080.7, atomicRadius: 154, thermalConductivity: 0.0491, electricalConductivity: null, specificHeat: 1.03, discoveryYear: 1898, discoveredBy: "William Ramsay" },
+            { number: 11, symbol: "Na", name: "Sódio", mass: 22.990, category: "metais-alcalinos", state: "solid", discovery: "1807", electron: "[Ne] 3s¹", description: "Metal alcalino essencial para a vida animal.", melt: 97.72, boil: 882.9, density: 0.968, electronConfiguration: "[Ne] 3s¹", electronegativity: 0.93, electronAffinity: 52.8, ionizationEnergy: 495.8, atomicRadius: 227, thermalConductivity: 140, electricalConductivity: 21, specificHeat: 1.228, discoveryYear: 1807, discoveredBy: "Humphry Davy" },
+            { number: 12, symbol: "Mg", name: "Magnésio", mass: 24.305, category: "alcalino-terrosos", state: "solid", discovery: "1755", electron: "[Ne] 3s²", description: "Metal alcalino-terroso usado em ligas leves.", melt: 650, boil: 1090, density: 1.738, electronConfiguration: "[Ne] 3s²", electronegativity: 1.31, electronAffinity: 0, ionizationEnergy: 737.7, atomicRadius: 173, thermalConductivity: 160, electricalConductivity: 23, specificHeat: 1.023, discoveryYear: 1755, discoveredBy: "Joseph Black" },
+            { number: 13, symbol: "Al", name: "Alumínio", mass: 26.982, category: "metaloides", state: "solid", discovery: "1825", electron: "[Ne] 3s² 3p¹", description: "Metal leve amplamente usado em embalagens.", melt: 660.32, boil: 2519, density: 2.698, electronConfiguration: "[Ne] 3s² 3p¹", electronegativity: 1.61, electronAffinity: 42.5, ionizationEnergy: 577.5, atomicRadius: 184, thermalConductivity: 235, electricalConductivity: 38, specificHeat: 0.897, discoveryYear: 1825, discoveredBy: "Hans Christian Ørsted" },
+            { number: 14, symbol: "Si", name: "Silício", mass: 28.085, category: "pos-transicao", state: "solid", discovery: "1824", electron: "[Ne] 3s² 3p²", description: "Semimetal fundamental para a eletrônica moderna.", melt: 1414, boil: 2900, density: 2.329, electronConfiguration: "[Ne] 3s² 3p²", electronegativity: 1.9, electronAffinity: 133.6, ionizationEnergy: 786.5, atomicRadius: 210, thermalConductivity: 150, electricalConductivity: 0.001, specificHeat: 0.705, discoveryYear: 1824, discoveredBy: "Jöns Jacob Berzelius" },
+            { number: 15, symbol: "P", name: "Fósforo", mass: 30.974, category: "nao-metais", state: "solid", discovery: "1669", electron: "[Ne] 3s² 3p³", description: "Elemento essencial para o DNA e fertilizantes.", melt: 44.15, boil: 280.5, density: 1.823, electronConfiguration: "[Ne] 3s² 3p³", electronegativity: 2.19, electronAffinity: 72, ionizationEnergy: 1011.8, atomicRadius: 180, thermalConductivity: 0.236, electricalConductivity: 1.0e-9, specificHeat: 0.769, discoveryYear: 1669, discoveredBy: "Hennig Brand" },
+            { number: 16, symbol: "S", name: "Enxofre", mass: 32.06, category: "nao-metais", state: "solid", discovery: "Antiguidade", electron: "[Ne] 3s² 3p⁴", description: "Usado em pneus, fertilizantes e ácido sulfúrico.", melt: 115.21, boil: 444.6, density: 2.07, electronConfiguration: "[Ne] 3s² 3p⁴", electronegativity: 2.58, electronAffinity: 200, ionizationEnergy: 999.6, atomicRadius: 180, thermalConductivity: 0.205, electricalConductivity: 1.0e-15, specificHeat: 0.71, discoveryYear: "Antiguidade", discoveredBy: "Desconhecido" },
+            { number: 17, symbol: "Cl", name: "Cloro", mass: 35.45, category: "nao-metais", state: "gas", discovery: "1774", electron: "[Ne] 3s² 3p⁵", description: "Halogenio usado em purificação de água e PVC.", melt: -101.5, boil: -34.04, density: 0.003214, electronConfiguration: "[Ne] 3s² 3p⁵", electronegativity: 3.16, electronAffinity: 349, ionizationEnergy: 1251.2, atomicRadius: 175, thermalConductivity: 0.0089, electricalConductivity: 0.01, specificHeat: 0.479, discoveryYear: 1774, discoveredBy: "Carl Wilhelm Scheele" },
+            { number: 18, symbol: "Ar", name: "Argônio", mass: 39.948, category: "gases-nobres", state: "gas", discovery: "1894", electron: "[Ne] 3s² 3p⁶", description: "Gás nobre usado em lâmpadas e soldagem.", melt: -189.3, boil: -185.8, density: 0.001784, electronConfiguration: "[Ne] 3s² 3p⁶", electronegativity: null, electronAffinity: 0, ionizationEnergy: 1520.6, atomicRadius: 188, thermalConductivity: 0.01772, electricalConductivity: null, specificHeat: 0.52, discoveryYear: 1894, discoveredBy: "Lord Rayleigh" },
+            { number: 19, symbol: "K", name: "Potássio", mass: 39.098, category: "metais-alcalinos", state: "solid", discovery: "1807", electron: "[Ar] 4s¹", description: "Metal alcalino essencial para a função nervosa.", melt: 63.5, boil: 759, density: 0.856, electronConfiguration: "[Ar] 4s¹", electronegativity: 0.82, electronAffinity: 48.4, ionizationEnergy: 418.8, atomicRadius: 275, thermalConductivity: 100, electricalConductivity: 14, specificHeat: 0.757, discoveryYear: 1807, discoveredBy: "Humphry Davy" },
+            { number: 20, symbol: "Ca", name: "Cálcio", mass: 40.078, category: "alcalino-terrosos", state: "solid", discovery: "1808", electron: "[Ar] 4s²", description: "Essencial para ossos, dentes e contração muscular.", melt: 842, boil: 1484, density: 1.54, electronConfiguration: "[Ar] 4s²", electronegativity: 1.0, electronAffinity: 2.37, ionizationEnergy: 589.8, atomicRadius: 231, thermalConductivity: 200, electricalConductivity: 29, specificHeat: 0.647, discoveryYear: 1808, discoveredBy: "Humphry Davy" },
+            { number: 21, symbol: "Sc", name: "Escândio", mass: 44.956, category: "transicao", state: "solid", discovery: "1879", electron: "[Ar] 3d¹ 4s²", description: "Metal de transição usado em lâmpadas de vapor de mercúrio.", melt: 1541, boil: 2836, density: 2.985, electronConfiguration: "[Ar] 3d¹ 4s²", electronegativity: 1.36, electronAffinity: 18.1, ionizationEnergy: 633.1, atomicRadius: 184, thermalConductivity: 15.8, electricalConductivity: 1.8, specificHeat: 0.568, discoveryYear: 1879, discoveredBy: "Lars Fredrik Nilson" },
+            { number: 22, symbol: "Ti", name: "Titânio", mass: 47.867, category: "transicao", state: "solid", discovery: "1791", electron: "[Ar] 3d² 4s²", description: "Metal forte, leve e resistente à corrosão.", melt: 1668, boil: 3287, density: 4.506, electronConfiguration: "[Ar] 3d² 4s²", electronegativity: 1.54, electronAffinity: 7.6, ionizationEnergy: 658.8, atomicRadius: 176, thermalConductivity: 21.9, electricalConductivity: 2.5, specificHeat: 0.523, discoveryYear: 1791, discoveredBy: "William Gregor" },
+            { number: 23, symbol: "V", name: "Vanádio", mass: 50.942, category: "transicao", state: "solid", discovery: "1801", electron: "[Ar] 3d³ 4s²", description: "Metal usado para fortalecer aços especiais.", melt: 1910, boil: 3407, density: 6.11, electronConfiguration: "[Ar] 3d³ 4s²", electronegativity: 1.63, electronAffinity: 50.6, ionizationEnergy: 650.9, atomicRadius: 171, thermalConductivity: 30.7, electricalConductivity: 5.0, specificHeat: 0.489, discoveryYear: 1801, discoveredBy: "Andrés Manuel del Río" },
+            { number: 24, symbol: "Cr", name: "Cromo", mass: 51.996, category: "transicao", state: "solid", discovery: "1797", electron: "[Ar] 3d⁵ 4s¹", description: "Metal usado em revestimentos anticorrosivos.", melt: 1907, boil: 2671, density: 7.15, electronConfiguration: "[Ar] 3d⁵ 4s¹", electronegativity: 1.66, electronAffinity: 64.3, ionizationEnergy: 652.9, atomicRadius: 166, thermalConductivity: 93.9, electricalConductivity: 7.9, specificHeat: 0.449, discoveryYear: 1797, discoveredBy: "Louis Nicolas Vauquelin" },
+            { number: 25, symbol: "Mn", name: "Manganês", mass: 54.938, category: "transicao", state: "solid", discovery: "1774", electron: "[Ar] 3d⁵ 4s²", description: "Elemento essencial na produção de aço.", melt: 1246, boil: 2061, density: 7.21, electronConfiguration: "[Ar] 3d⁵ 4s²", electronegativity: 1.55, electronAffinity: 0, ionizationEnergy: 717.3, atomicRadius: 161, thermalConductivity: 7.81, electricalConductivity: 0.62, specificHeat: 0.479, discoveryYear: 1774, discoveredBy: "Johan Gottlieb Gahn" },
+            { number: 26, symbol: "Fe", name: "Ferro", mass: 55.845, category: "transicao", state: "solid", discovery: "Antiguidade", electron: "[Ar] 3d⁶ 4s²", description: "Metal mais utilizado pela humanidade.", melt: 1538, boil: 2862, density: 7.874, electronConfiguration: "[Ar] 3d⁶ 4s²", electronegativity: 1.83, electronAffinity: 15.7, ionizationEnergy: 762.5, atomicRadius: 156, thermalConductivity: 80.2, electricalConductivity: 10.0, specificHeat: 0.449, discoveryYear: "Antiguidade", discoveredBy: "Desconhecido" },
+            { number: 27, symbol: "Co", name: "Cobalto", mass: 58.933, category: "transicao", state: "solid", discovery: "1735", electron: "[Ar] 3d⁷ 4s²", description: "Metal usado em ligas magnéticas e baterias.", melt: 1495, boil: 2927, density: 8.86, electronConfiguration: "[Ar] 3d⁷ 4s²", electronegativity: 1.88, electronAffinity: 63.7, ionizationEnergy: 760.4, atomicRadius: 152, thermalConductivity: 100, electricalConductivity: 17.0, specificHeat: 0.421, discoveryYear: 1735, discoveredBy: "Georg Brandt" },
+            { number: 28, symbol: "Ni", name: "Níquel", mass: 58.693, category: "transicao", state: "solid", discovery: "1751", electron: "[Ar] 3d⁸ 4s²", description: "Metal usado em moedas e ligas resistentes.", melt: 1455, boil: 2913, density: 8.912, electronConfiguration: "[Ar] 3d⁸ 4s²", electronegativity: 1.91, electronAffinity: 112, ionizationEnergy: 737.1, atomicRadius: 149, thermalConductivity: 90.9, electricalConductivity: 14.0, specificHeat: 0.444, discoveryYear: 1751, discoveredBy: "Axel Fredrik Cronstedt" },
+            { number: 29, symbol: "Cu", name: "Cobre", mass: 63.546, category: "transicao", state: "solid", discovery: "Antiguidade", electron: "[Ar] 3d¹⁰ 4s¹", description: "Excelente condutor de eletricidade e calor.", melt: 1084.62, boil: 2562, density: 8.96, electronConfiguration: "[Ar] 3d¹⁰ 4s¹", electronegativity: 1.90, electronAffinity: 118.4, ionizationEnergy: 745.5, atomicRadius: 145, thermalConductivity: 401, electricalConductivity: 59.0, specificHeat: 0.385, discoveryYear: "Antiguidade", discoveredBy: "Desconhecido" },
+            { number: 30, symbol: "Zn", name: "Zinco", mass: 65.38, category: "transicao", state: "solid", discovery: "1746", electron: "[Ar] 3d¹⁰ 4s²", description: "Metal usado em galvanização e ligas.", melt: 419.53, boil: 907, density: 7.134, electronConfiguration: "[Ar] 3d¹⁰ 4s²", electronegativity: 1.65, electronAffinity: 0, ionizationEnergy: 906.4, atomicRadius: 142, thermalConductivity: 116, electricalConductivity: 17.0, specificHeat: 0.388, discoveryYear: 1746, discoveredBy: "Andreas Sigismund Marggraf" },
+            { number: 31, symbol: "Ga", name: "Gálio", mass: 69.723, category: "metaloides", state: "solid", discovery: "1875", electron: "[Ar] 3d¹⁰ 4s² 4p¹", description: "Metal que derrete na mão (29.76°C).", melt: 29.76, boil: 2204, density: 5.907, electronConfiguration: "[Ar] 3d¹⁰ 4s² 4p¹", electronegativity: 1.81, electronAffinity: 28.9, ionizationEnergy: 578.8, atomicRadius: 187, thermalConductivity: 40.6, electricalConductivity: 7.1, specificHeat: 0.371, discoveryYear: 1875, discoveredBy: "Paul-Émile Lecoq de Boisbaudran" },
+            { number: 32, symbol: "Ge", name: "Germânio", mass: 72.630, category: "pos-transicao", state: "solid", discovery: "1886", electron: "[Ar] 3d¹⁰ 4s² 4p²", description: "Semimetal fundamental para a eletrônica.", melt: 938.25, boil: 2833, density: 5.323, electronConfiguration: "[Ar] 3d¹⁰ 4s² 4p²", electronegativity: 2.01, electronAffinity: 119, ionizationEnergy: 762, atomicRadius: 211, thermalConductivity: 60.2, electricalConductivity: 2.0, specificHeat: 0.32, discoveryYear: 1886, discoveredBy: "Clemens Winkler" },
+            { number: 33, symbol: "As", name: "Arsênio", mass: 74.922, category: "pos-transicao", state: "solid", discovery: "1250", electron: "[Ar] 3d¹⁰ 4s² 4p³", description: "Semimetal conhecido por sua toxicidade.", melt: 817, boil: 614, density: 5.727, electronConfiguration: "[Ar] 3d¹⁰ 4s² 4p³", electronegativity: 2.18, electronAffinity: 78, ionizationEnergy: 947.0, atomicRadius: 185, thermalConductivity: 50.2, electricalConductivity: 3.45, specificHeat: 0.329, discoveryYear: 1250, discoveredBy: "Albertus Magnus" },
+            { number: 34, symbol: "Se", name: "Selênio", mass: 78.971, category: "nao-metais", state: "solid", discovery: "1817", electron: "[Ar] 3d¹⁰ 4s² 4p⁴", description: "Elemento essencial em fotocélulas e xerografia.", melt: 221, boil: 685, density: 4.809, electronConfiguration: "[Ar] 3d¹⁰ 4s² 4p⁴", electronegativity: 2.55, electronAffinity: 195, ionizationEnergy: 941.0, atomicRadius: 190, thermalConductivity: 0.52, electricalConductivity: 0.001, specificHeat: 0.321, discoveryYear: 1817, discoveredBy: "Jöns Jacob Berzelius" },
+            { number: 35, symbol: "Br", name: "Bromo", mass: 79.904, category: "nao-metais", state: "liquid", discovery: "1826", electron: "[Ar] 3d¹⁰ 4s² 4p⁵", description: "Único elemento não metálico líquido à temperatura ambiente.", melt: -7.2, boil: 58.8, density: 3.1028, electronConfiguration: "[Ar] 3d¹⁰ 4s² 4p⁵", electronegativity: 2.96, electronAffinity: 324.6, ionizationEnergy: 1139.9, atomicRadius: 183, thermalConductivity: 0.122, electricalConductivity: 1.0e-10, specificHeat: 0.474, discoveryYear: 1826, discoveredBy: "Antoine Jérôme Balard" },
+            { number: 36, symbol: "Kr", name: "Criptônio", mass: 83.798, category: "gases-nobres", state: "gas", discovery: "1898", electron: "[Ar] 3d¹⁰ 4s² 4p⁶", description: "Gás nobre usado em lâmpadas fluorescentes.", melt: -157.36, boil: -153.22, density: 0.003733, electronConfiguration: "[Ar] 3d¹⁰ 4s² 4p⁶", electronegativity: 3.00, electronAffinity: 0, ionizationEnergy: 1350.8, atomicRadius: 202, thermalConductivity: 0.00943, electricalConductivity: null, specificHeat: 0.248, discoveryYear: 1898, discoveredBy: "William Ramsay" },
+            { number: 37, symbol: "Rb", name: "Rubídio", mass: 85.468, category: "metais-alcalinos", state: "solid", discovery: "1861", electron: "[Kr] 5s¹", description: "Metal alcalino muito reativo.", melt: 39.31, boil: 688, density: 1.532, electronConfiguration: "[Kr] 5s¹", electronegativity: 0.82, electronAffinity: 46.9, ionizationEnergy: 403.0, atomicRadius: 303, thermalConductivity: 58.2, electricalConductivity: 8.0, specificHeat: 0.363, discoveryYear: 1861, discoveredBy: "Robert Bunsen" },
+            { number: 38, symbol: "Sr", name: "Estrôncio", mass: 87.62, category: "alcalino-terrosos", state: "solid", discovery: "1790", electron: "[Kr] 5s²", description: "Metal usado em fogos de artifício (cor vermelha).", melt: 777, boil: 1382, density: 2.64, electronConfiguration: "[Kr] 5s²", electronegativity: 0.95, electronAffinity: 5.03, ionizationEnergy: 549.5, atomicRadius: 249, thermalConductivity: 35.4, electricalConductivity: 7.7, specificHeat: 0.301, discoveryYear: 1790, discoveredBy: "Adair Crawford" },
+            { number: 39, symbol: "Y", name: "Ítrio", mass: 88.906, category: "transicao", state: "solid", discovery: "1794", electron: "[Kr] 4d¹ 5s²", description: "Metal de transição usado em supercondutores.", melt: 1526, boil: 3345, density: 4.469, electronConfiguration: "[Kr] 4d¹ 5s²", electronegativity: 1.22, electronAffinity: 29.6, ionizationEnergy: 600, atomicRadius: 212, thermalConductivity: 17.2, electricalConductivity: 1.8, specificHeat: 0.298, discoveryYear: 1794, discoveredBy: "Johan Gadolin" },
+            { number: 40, symbol: "Zr", name: "Zircônio", mass: 91.224, category: "transicao", state: "solid", discovery: "1789", electron: "[Kr] 4d² 5s²", description: "Metal resistente à corrosão, usado em reatores nucleares.", melt: 1855, boil: 4409, density: 6.506, electronConfiguration: "[Kr] 4d² 5s²", electronegativity: 1.33, electronAffinity: 41.1, ionizationEnergy: 640.1, atomicRadius: 206, thermalConductivity: 22.7, electricalConductivity: 2.4, specificHeat: 0.278, discoveryYear: 1789, discoveredBy: "Martin Heinrich Klaproth" },
+            { number: 41, symbol: "Nb", name: "Nióbio", mass: 92.906, category: "transicao", state: "solid", discovery: "1801", electron: "[Kr] 4d⁴ 5s¹", description: "Metal usado em aços especiais e supercondutores.", melt: 2477, boil: 4744, density: 8.57, electronConfiguration: "[Kr] 4d⁴ 5s¹", electronegativity: 1.6, electronAffinity: 86.1, ionizationEnergy: 652.1, atomicRadius: 198, thermalConductivity: 53.7, electricalConductivity: 6.7, specificHeat: 0.265, discoveryYear: 1801, discoveredBy: "Charles Hatchett" },
+            { number: 42, symbol: "Mo", name: "Molibdênio", mass: 95.95, category: "transicao", state: "solid", discovery: "1778", electron: "[Kr] 4d⁵ 5s¹", description: "Metal essencial para ligas de alta resistência.", melt: 2623, boil: 4639, density: 10.22, electronConfiguration: "[Kr] 4d⁵ 5s¹", electronegativity: 2.16, electronAffinity: 72.1, ionizationEnergy: 684.3, atomicRadius: 190, thermalConductivity: 138, electricalConductivity: 20.0, specificHeat: 0.251, discoveryYear: 1778, discoveredBy: "Carl Wilhelm Scheele" },
+            { number: 43, symbol: "Tc", name: "Tecnécio", mass: 98, category: "transicao", state: "solid", discovery: "1937", electron: "[Kr] 4d⁵ 5s²", description: "Primeiro elemento artificialmente produzido.", melt: 2157, boil: 4265, density: 11.5, electronConfiguration: "[Kr] 4d⁵ 5s²", electronegativity: 1.9, electronAffinity: 53, ionizationEnergy: 702, atomicRadius: 183, thermalConductivity: 50.6, electricalConductivity: 6.7, specificHeat: 0.21, discoveryYear: 1937, discoveredBy: "Carlo Perrier e Emilio Segrè" },
+            { number: 44, symbol: "Ru", name: "Rutênio", mass: 101.07, category: "transicao", state: "solid", discovery: "1844", electron: "[Kr] 4d⁷ 5s¹", description: "Metal de transição usado em ligas resistentes.", melt: 2334, boil: 4150, density: 12.37, electronConfiguration: "[Kr] 4d⁷ 5s¹", electronegativity: 2.2, electronAffinity: 101.3, ionizationEnergy: 710.2, atomicRadius: 178, thermalConductivity: 117, electricalConductivity: 14.0, specificHeat: 0.238, discoveryYear: 1844, discoveredBy: "Karl Ernst Claus" },
+            { number: 45, symbol: "Rh", name: "Ródio", mass: 102.91, category: "transicao", state: "solid", discovery: "1803", electron: "[Kr] 4d⁸ 5s¹", description: "Metal precioso usado em conversores catalíticos.", melt: 1964, boil: 3695, density: 12.41, electronConfiguration: "[Kr] 4d⁴ 5s¹", electronegativity: 2.28, electronAffinity: 109.7, ionizationEnergy: 719.7, atomicRadius: 173, thermalConductivity: 150, electricalConductivity: 23.0, specificHeat: 0.243, discoveryYear: 1803, discoveredBy: "William Hyde Wollaston" },
+            { number: 46, symbol: "Pd", name: "Paládio", mass: 106.42, category: "transicao", state: "solid", discovery: "1803", electron: "[Kr] 4d¹⁰", description: "Metal precioso que absorve grandes quantidades de hidrogênio.", melt: 1554.9, boil: 2963, density: 12.02, electronConfiguration: "[Kr] 4d¹⁰", electronegativity: 2.20, electronAffinity: 53.7, ionizationEnergy: 804.4, atomicRadius: 169, thermalConductivity: 71.8, electricalConductivity: 9.5, specificHeat: 0.244, discoveryYear: 1803, discoveredBy: "William Hyde Wollaston" },
+            { number: 47, symbol: "Ag", name: "Prata", mass: 107.87, category: "transicao", state: "solid", discovery: "Antiguidade", electron: "[Kr] 4d¹⁰ 5s¹", description: "Melhor condutor elétrico e térmico entre os metais.", melt: 961.78, boil: 2162, density: 10.49, electronConfiguration: "[Kr] 4d¹⁰ 5s¹", electronegativity: 1.93, electronAffinity: 125.6, ionizationEnergy: 731.0, atomicRadius: 165, thermalConductivity: 429, electricalConductivity: 63.0, specificHeat: 0.235, discoveryYear: "Antiguidade", discoveredBy: "Desconhecido" },
+            { number: 48, symbol: "Cd", name: "Cádmio", mass: 112.41, category: "transicao", state: "solid", discovery: "1817", electron: "[Kr] 4d¹⁰ 5s²", description: "Metal tóxico usado em baterias níquel-cádmio.", melt: 321.07, boil: 767, density: 8.69, electronConfiguration: "[Kr] 4d¹⁰ 5s²", electronegativity: 1.69, electronAffinity: 0, ionizationEnergy: 867.8, atomicRadius: 161, thermalConductivity: 96.6, electricalConductivity: 14.0, specificHeat: 0.232, discoveryYear: 1817, discoveredBy: "Friedrich Stromeyer" },
+            { number: 49, symbol: "In", name: "Índio", mass: 114.82, category: "metaloides", state: "solid", discovery: "1863", electron: "[Kr] 4d¹⁰ 5s² 5p¹", description: "Metal macio usado em telas touchscreen.", melt: 156.60, boil: 2072, density: 7.31, electronConfiguration: "[Kr] 4d¹⁰ 5s² 5p¹", electronegativity: 1.78, electronAffinity: 28.9, ionizationEnergy: 558.3, atomicRadius: 193, thermalConductivity: 81.8, electricalConductivity: 12.0, specificHeat: 0.233, discoveryYear: 1863, discoveredBy: "Ferdinand Reich e Hieronymus Theodor Richter" },
+            { number: 50, symbol: "Sn", name: "Estanho", mass: 118.71, category: "metaloides", state: "solid", discovery: "Antiguidade", electron: "[Kr] 4d¹⁰ 5s² 5p²", description: "Metal usado em soldas e revestimento de latas.", melt: 231.93, boil: 2602, density: 7.287, electronConfiguration: "[Kr] 4d¹⁰ 5s² 5p²", electronegativity: 1.96, electronAffinity: 107.3, ionizationEnergy: 708.6, atomicRadius: 217, thermalConductivity: 66.8, electricalConductivity: 9.0, specificHeat: 0.227, discoveryYear: "Antiguidade", discoveredBy: "Desconhecido" },
+            { number: 51, symbol: "Sb", name: "Antimônio", mass: 121.76, category: "pos-transicao", state: "solid", discovery: "1600 BC", electron: "[Kr] 4d¹⁰ 5s² 5p³", description: "Semimetal usado em chamas e ligas.", melt: 630.63, boil: 1587, density: 6.685, electronConfiguration: "[Kr] 4d¹⁰ 5s² 5p³", electronegativity: 2.05, electronAffinity: 103.2, ionizationEnergy: 834, atomicRadius: 206, thermalConductivity: 24.4, electricalConductivity: 2.5, specificHeat: 0.207, discoveryYear: "1600 BC", discoveredBy: "Desconhecido" },
+            { number: 52, symbol: "Te", name: "Telúrio", mass: 127.60, category: "pos-transicao", state: "solid", discovery: "1782", electron: "[Kr] 4d¹⁰ 5s² 5p⁴", description: "Semimetal usado em ligas metálicas e semicondutores.", melt: 449.51, boil: 988, density: 6.232, electronConfiguration: "[Kr] 4d¹⁰ 5s² 5p⁴", electronegativity: 2.1, electronAffinity: 190.2, ionizationEnergy: 869.3, atomicRadius: 206, thermalConductivity: 2.35, electricalConductivity: 0.005, specificHeat: 0.202, discoveryYear: 1782, discoveredBy: "Franz-Joseph Müller von Reichenstein" },
+            { number: 53, symbol: "I", name: "Iodo", mass: 126.90, category: "nao-metais", state: "solid", discovery: "1811", electron: "[Kr] 4d¹⁰ 5s² 5p⁵", description: "Elemento essencial para a tireoide, sublima facilmente.", melt: 113.7, boil: 184.3, density: 4.93, electronConfiguration: "[Kr] 4d¹⁰ 5s² 5p⁵", electronegativity: 2.66, electronAffinity: 295.2, ionizationEnergy: 1008.4, atomicRadius: 198, thermalConductivity: 0.449, electricalConductivity: 1.0e-7, specificHeat: 0.214, discoveryYear: 1811, discoveredBy: "Bernard Courtois" },
+            { number: 54, symbol: "Xe", name: "Xenônio", mass: 131.29, category: "gases-nobres", state: "gas", discovery: "1898", electron: "[Kr] 4d¹⁰ 5s² 5p⁶", description: "Gás nobre usado em lâmpadas e anestésicos.", melt: -111.75, boil: -108.0, density: 0.005887, electronConfiguration: "[Kr] 4d¹⁰ 5s² 5p⁶", electronegativity: 2.6, electronAffinity: 0, ionizationEnergy: 1170.4, atomicRadius: 216, thermalConductivity: 0.00565, electricalConductivity: null, specificHeat: 0.158, discoveryYear: 1898, discoveredBy: "William Ramsay" },
+            { number: 55, symbol: "Cs", name: "Césio", mass: 132.91, category: "metais-alcalinos", state: "solid", discovery: "1860", electron: "[Xe] 6s¹", description: "Metal alcalino mais reativo, usado em relógios atômicos.", melt: 28.44, boil: 671, density: 1.873, electronConfiguration: "[Xe] 6s¹", electronegativity: 0.79, electronAffinity: 45.5, ionizationEnergy: 375.7, atomicRadius: 343, thermalConductivity: 35.9, electricalConductivity: 5.0, specificHeat: 0.242, discoveryYear: 1860, discoveredBy: "Robert Bunsen" },
+            { number: 56, symbol: "Ba", name: "Bário", mass: 137.33, category: "alcalino-terrosos", state: "solid", discovery: "1808", electron: "[Xe] 6s²", description: "Metal alcalino-terroso usado em contrastes radiológicos.", melt: 727, boil: 1897, density: 3.51, electronConfiguration: "[Xe] 6s²", electronegativity: 0.89, electronAffinity: 13.95, ionizationEnergy: 502.9, atomicRadius: 268, thermalConductivity: 18.4, electricalConductivity: 3.0, specificHeat: 0.204, discoveryYear: 1808, discoveredBy: "Humphry Davy" },
+            { number: 57, symbol: "La", name: "Lantânio", mass: 138.91, category: "lantanideos", state: "solid", discovery: "1839", electron: "[Xe] 5d¹ 6s²", description: "Primeiro elemento da série dos lantanídeos.", melt: 920, boil: 3464, density: 6.146, electronConfiguration: "[Xe] 5d¹ 6s²", electronegativity: 1.1, electronAffinity: 48, ionizationEnergy: 538.1, atomicRadius: 243, thermalConductivity: 13.4, electricalConductivity: 1.6, specificHeat: 0.195, discoveryYear: 1839, discoveredBy: "Carl Gustaf Mosander" },
+            { number: 58, symbol: "Ce", name: "Cério", mass: 140.12, category: "lantanideos", state: "solid", discovery: "1803", electron: "[Xe] 4f¹ 5d¹ 6s²", description: "Lantanídeo mais abundante, usado em pedras de isqueiro.", melt: 795, boil: 3443, density: 6.77, electronConfiguration: "[Xe] 4f¹ 5d¹ 6s²", electronegativity: 1.12, electronAffinity: 50, ionizationEnergy: 534.4, atomicRadius: 242, thermalConductivity: 11.3, electricalConductivity: 1.4, specificHeat: 0.192, discoveryYear: 1803, discoveredBy: "Jöns Jacob Berzelius" },
+            { number: 59, symbol: "Pr", name: "Praseodímio", mass: 140.91, category: "lantanideos", state: "solid", discovery: "1885", electron: "[Xe] 4f³ 6s²", description: "Lantanídeo usado em ligas para pedras de isqueiro.", melt: 935, boil: 3520, density: 6.773, electronConfiguration: "[Xe] 4f³ 6s²", electronegativity: 1.13, electronAffinity: 50, ionizationEnergy: 527, atomicRadius: 241, thermalConductivity: 12.5, electricalConductivity: 1.5, specificHeat: 0.193, discoveryYear: 1885, discoveredBy: "Carl Auer von Welsbach" },
+            { number: 60, symbol: "Nd", name: "Neodímio", mass: 144.24, category: "lantanideos", state: "solid", discovery: "1885", electron: "[Xe] 4f⁴ 6s²", description: "Lantanídeo usado em ímãs poderosos.", melt: 1024, boil: 3074, density: 7.007, electronConfiguration: "[Xe] 4f⁴ 6s²", electronegativity: 1.14, electronAffinity: 50, ionizationEnergy: 533.1, atomicRadius: 239, thermalConductivity: 16.5, electricalConductivity: 1.6, specificHeat: 0.19, discoveryYear: 1885, discoveredBy: "Carl Auer von Welsbach" },
+            { number: 61, symbol: "Pm", name: "Promécio", mass: 145, category: "lantanideos", state: "solid", discovery: "1945", electron: "[Xe] 4f⁵ 6s²", description: "Elemento radioativo artificial, usado em baterias nucleares.", melt: 1042, boil: 3000, density: 7.26, electronConfiguration: "[Xe] 4f⁵ 6s²", electronegativity: 1.13, electronAffinity: 50, ionizationEnergy: 540, atomicRadius: 238, thermalConductivity: 15, electricalConductivity: 1.3, specificHeat: 0.18, discoveryYear: 1945, discoveredBy: "Jacob A. Marinsky" },
+            { number: 62, symbol: "Sm", name: "Samário", mass: 150.36, category: "lantanideos", state: "solid", discovery: "1879", electron: "[Xe] 4f⁶ 6s²", description: "Lantanídeo usado em ímãs e captura de nêutrons.", melt: 1072, boil: 1900, density: 7.52, electronConfiguration: "[Xe] 4f⁶ 6s²", electronegativity: 1.17, electronAffinity: 50, ionizationEnergy: 544.5, atomicRadius: 236, thermalConductivity: 13.3, electricalConductivity: 1.1, specificHeat: 0.197, discoveryYear: 1879, discoveredBy: "Paul-Émile Lecoq de Boisbaudran" },
+            { number: 63, symbol: "Eu", name: "Európio", mass: 151.96, category: "lantanideos", state: "solid", discovery: "1901", electron: "[Xe] 4f⁷ 6s²", description: "Lantanídeo usado em telas de TV e fluorescência.", melt: 822, boil: 1529, density: 5.244, electronConfiguration: "[Xe] 4f⁷ 6s²", electronegativity: 1.2, electronAffinity: 50, ionizationEnergy: 547.1, atomicRadius: 235, thermalConductivity: 13.9, electricalConductivity: 1.1, specificHeat: 0.182, discoveryYear: 1901, discoveredBy: "Eugène-Anatole Demarçay" },
+            { number: 64, symbol: "Gd", name: "Gadolínio", mass: 157.25, category: "lantanideos", state: "solid", discovery: "1880", electron: "[Xe] 4f⁷ 5d¹ 6s²", description: "Lantanídeo com propriedades magnéticas excepcionais.", melt: 1312, boil: 3273, density: 7.90, electronConfiguration: "[Xe] 4f⁷ 5d¹ 6s²", electronegativity: 1.2, electronAffinity: 50, ionizationEnergy: 593.4, atomicRadius: 234, thermalConductivity: 10.6, electricalConductivity: 0.77, specificHeat: 0.236, discoveryYear: 1880, discoveredBy: "Jean Charles Galissard de Marignac" },
+            { number: 65, symbol: "Tb", name: "Térbio", mass: 158.93, category: "lantanideos", state: "solid", discovery: "1843", electron: "[Xe] 4f⁹ 6s²", description: "Lantanídeo usado em dispositivos eletrônicos e lasers.", melt: 1356, boil: 3230, density: 8.23, electronConfiguration: "[Xe] 4f⁹ 6s²", electronegativity: 1.2, electronAffinity: 50, ionizationEnergy: 565.8, atomicRadius: 233, thermalConductivity: 11.1, electricalConductivity: 0.89, specificHeat: 0.182, discoveryYear: 1843, discoveredBy: "Carl Gustaf Mosander" },
+            { number: 66, symbol: "Dy", name: "Disprósio", mass: 162.50, category: "lantanideos", state: "solid", discovery: "1886", electron: "[Xe] 4f¹⁰ 6s²", description: "Lantanídeo usado em ímãs de alta performance.", melt: 1407, boil: 2567, density: 8.55, electronConfiguration: "[Xe] 4f¹⁰ 6s²", electronegativity: 1.22, electronAffinity: 50, ionizationEnergy: 573.0, atomicRadius: 232, thermalConductivity: 10.7, electricalConductivity: 1.1, specificHeat: 0.17, discoveryYear: 1886, discoveredBy: "Paul-Émile Lecoq de Boisbaudran" },
+            { number: 67, symbol: "Ho", name: "Hólmio", mass: 164.93, category: "lantanideos", state: "solid", discovery: "1878", electron: "[Xe] 4f¹¹ 6s²", description: "Lantanídeo com as maiores propriedades magnéticas.", melt: 1461, boil: 2720, density: 8.80, electronConfiguration: "[Xe] 4f¹¹ 6s²", electronegativity: 1.23, electronAffinity: 50, ionizationEnergy: 581.0, atomicRadius: 232, thermalConductivity: 16.2, electricalConductivity: 1.2, specificHeat: 0.165, discoveryYear: 1878, discoveredBy: "Marc Delafontaine e Jacques-Louis Soret" },
+            { number: 68, symbol: "Er", name: "Érbio", mass: 167.26, category: "lantanideos", state: "solid", discovery: "1843", electron: "[Xe] 4f¹² 6s²", description: "Lantanídeo usado em fibras ópticas e lasers.", melt: 1529, boil: 2868, density: 9.07, electronConfiguration: "[Xe] 4f¹² 6s²", electronegativity: 1.24, electronAffinity: 50, ionizationEnergy: 589.3, atomicRadius: 231, thermalConductivity: 14.5, electricalConductivity: 1.2, specificHeat: 0.168, discoveryYear: 1843, discoveredBy: "Carl Gustaf Mosander" },
+            { number: 69, symbol: "Tm", name: "Túlio", mass: 168.93, category: "lantanideos", state: "solid", discovery: "1879", electron: "[Xe] 4f¹³ 6s²", description: "Lantanídeo mais raro, usado em aparelhos de raio-X.", melt: 1545, boil: 1950, density: 9.32, electronConfiguration: "[Xe] 4f¹³ 6s²", electronegativity: 1.25, electronAffinity: 50, ionizationEnergy: 596.7, atomicRadius: 230, thermalConductivity: 16.9, electricalConductivity: 1.4, specificHeat: 0.16, discoveryYear: 1879, discoveredBy: "Per Teodor Cleve" },
+            { number: 70, symbol: "Yb", name: "Itérbio", mass: 173.05, category: "lantanideos", state: "solid", discovery: "1878", electron: "[Xe] 4f¹⁴ 6s²", description: "Lantanídeo usado em aços inoxidáveis e lasers.", melt: 819, boil: 1196, density: 6.90, electronConfiguration: "[Xe] 4f¹⁴ 6s²", electronegativity: 1.1, electronAffinity: 50, ionizationEnergy: 603.4, atomicRadius: 242, thermalConductivity: 38.5, electricalConductivity: 3.5, specificHeat: 0.155, discoveryYear: 1878, discoveredBy: "Jean Charles Galissard de Marignac" },
+            { number: 71, symbol: "Lu", name: "Lutécio", mass: 174.97, category: "lantanideos", state: "solid", discovery: "1907", electron: "[Xe] 4f¹⁴ 5d¹ 6s²", description: "Último elemento da série dos lantanídeos.", melt: 1663, boil: 3402, density: 9.84, electronConfiguration: "[Xe] 4f¹⁴ 5d¹ 6s²", electronegativity: 1.27, electronAffinity: 50, ionizationEnergy: 523.5, atomicRadius: 217, thermalConductivity: 16.4, electricalConductivity: 1.7, specificHeat: 0.154, discoveryYear: 1907, discoveredBy: "Georges Urbano" },
+            { number: 72, symbol: "Hf", name: "Háfnio", mass: 178.49, category: "transicao", state: "solid", discovery: "1923", electron: "[Xe] 4f¹⁴ 5d² 6s²", description: "Metal de transição usado em reatores nucleares.", melt: 2233, boil: 4603, density: 13.31, electronConfiguration: "[Xe] 4f¹⁴ 5d² 6s²", electronegativity: 1.3, electronAffinity: 0, ionizationEnergy: 658.5, atomicRadius: 208, thermalConductivity: 23.0, electricalConductivity: 3.1, specificHeat: 0.144, discoveryYear: 1923, discoveredBy: "Dirk Coster e George de Hevesy" },
+            { number: 73, symbol: "Ta", name: "Tântalo", mass: 180.95, category: "transicao", state: "solid", discovery: "1802", electron: "[Xe] 4f¹⁴ 5d³ 6s²", description: "Metal muito resistente à corrosão, usado em eletrônicos.", melt: 3017, boil: 5458, density: 16.69, electronConfiguration: "[Xe] 4f¹⁴ 5d³ 6s²", electronegativity: 1.5, electronAffinity: 31.1, ionizationEnergy: 761, atomicRadius: 200, thermalConductivity: 57.5, electricalConductivity: 7.6, specificHeat: 0.14, discoveryYear: 1802, discoveredBy: "Anders Gustaf Ekeberg" },
+            { number: 74, symbol: "W", name: "Tungstênio", mass: 183.84, category: "transicao", state: "solid", discovery: "1783", electron: "[Xe] 4f¹⁴ 5d⁴ 6s²", description: "Metal com o mais alto ponto de fusão, usado em filamentos.", melt: 3422, boil: 5555, density: 19.25, electronConfiguration: "[Xe] 4f¹⁴ 5d⁴ 6s²", electronegativity: 2.36, electronAffinity: 78.6, ionizationEnergy: 770, atomicRadius: 193, thermalConductivity: 173, electricalConductivity: 18.0, specificHeat: 0.132, discoveryYear: 1783, discoveredBy: "Juan José Elhuyar e Fausto Elhuyar" },
+            { number: 75, symbol: "Re", name: "Rênio", mass: 186.21, category: "transicao", state: "solid", discovery: "1925", electron: "[Xe] 4f¹⁴ 5d⁵ 6s²", description: "Um dos metais mais densos e de alto ponto de fusão.", melt: 3186, boil: 5596, density: 21.02, electronConfiguration: "[Xe] 4f¹⁴ 5d⁵ 6s²", electronegativity: 1.9, electronAffinity: 14.5, ionizationEnergy: 760, atomicRadius: 188, thermalConductivity: 48.0, electricalConductivity: 5.4, specificHeat: 0.137, discoveryYear: 1925, discoveredBy: "Walter Noddack, Ida Tacke e Otto Berg" },
+            { number: 76, symbol: "Os", name: "Ósmio", mass: 190.23, category: "transicao", state: "solid", discovery: "1803", electron: "[Xe] 4f¹⁴ 5d⁶ 6s²", description: "Elemento mais denso conhecido, usado em ligas duras.", melt: 3033, boil: 5012, density: 22.59, electronConfiguration: "[Xe] 4f¹⁴ 5d⁶ 6s²", electronegativity: 2.2, electronAffinity: 106.1, ionizationEnergy: 840, atomicRadius: 185, thermalConductivity: 87.6, electricalConductivity: 12.0, specificHeat: 0.13, discoveryYear: 1803, discoveredBy: "Smithson Tennant" },
+            { number: 77, symbol: "Ir", name: "Irídio", mass: 192.22, category: "transicao", state: "solid", discovery: "1803", electron: "[Xe] 4f¹⁴ 5d⁷ 6s²", description: "Metal muito denso e resistente à corrosão.", melt: 2466, boil: 4428, density: 22.56, electronConfiguration: "[Xe] 4f¹⁴ 5d⁷ 6s²", electronegativity: 2.20, electronAffinity: 151.0, ionizationEnergy: 880, atomicRadius: 180, thermalConductivity: 147, electricalConductivity: 19.0, specificHeat: 0.131, discoveryYear: 1803, discoveredBy: "Smithson Tennant" },
+            { number: 78, symbol: "Pt", name: "Platina", mass: 195.08, category: "transicao", state: "solid", discovery: "1735", electron: "[Xe] 4f¹⁴ 5d⁹ 6s¹", description: "Metal precioso usado em joias e catalisadores.", melt: 1768.3, boil: 3825, density: 21.45, electronConfiguration: "[Xe] 4f¹⁴ 5d⁹ 6s¹", electronegativity: 2.28, electronAffinity: 205.3, ionizationEnergy: 870, atomicRadius: 177, thermalConductivity: 71.6, electricalConductivity: 9.4, specificHeat: 0.133, discoveryYear: 1735, discoveredBy: "Antonio de Ulloa" },
+            { number: 79, symbol: "Au", name: "Ouro", mass: 196.97, category: "transicao", state: "solid", discovery: "Antiguidade", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s¹", description: "Metal precioso altamente valorizado e não reactivo.", melt: 1064.18, boil: 2856, density: 19.3, electronConfiguration: "[Xe] 4f¹⁴ 5d¹⁰ 6s¹", electronegativity: 2.54, electronAffinity: 222.8, ionizationEnergy: 890.1, atomicRadius: 174, thermalConductivity: 318, electricalConductivity: 45.0, specificHeat: 0.129, discoveryYear: "Antiguidade", discoveredBy: "Desconhecido" },
+            { number: 80, symbol: "Hg", name: "Mercúrio", mass: 200.59, category: "transicao", state: "liquid", discovery: "1500 BC", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s²", description: "Único metal líquido à temperatura ambiente, tóxico.", melt: -38.83, boil: 356.73, density: 13.5336, electronConfiguration: "[Xe] 4f¹⁴ 5d¹⁰ 6s²", electronegativity: 2.00, electronAffinity: 0, ionizationEnergy: 1007.1, atomicRadius: 171, thermalConductivity: 8.3, electricalConductivity: 1.0, specificHeat: 0.14, discoveryYear: "1500 BC", discoveredBy: "Desconhecido" },
+            { number: 81, symbol: "Tl", name: "Tálio", mass: 204.38, category: "metaloides", state: "solid", discovery: "1861", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹", description: "Metal tóxico usado em detectores de infravermelho.", melt: 304, boil: 1473, density: 11.85, electronConfiguration: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹", electronegativity: 1.62, electronAffinity: 19.2, ionizationEnergy: 589.4, atomicRadius: 190, thermalConductivity: 46.1, electricalConductivity: 6.7, specificHeat: 0.129, discoveryYear: 1861, discoveredBy: "William Crookes" },
+            { number: 82, symbol: "Pb", name: "Chumbo", mass: 207.2, category: "metaloides", state: "solid", discovery: "Antiguidade", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²", description: "Metal pesado e tóxico, usado em baterias e proteção contra radiação.", melt: 327.46, boil: 1749, density: 11.34, electronConfiguration: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²", electronegativity: 2.33, electronAffinity: 35.1, ionizationEnergy: 715.6, atomicRadius: 202, thermalConductivity: 35.3, electricalConductivity: 4.8, specificHeat: 0.129, discoveryYear: "Antiguidade", discoveredBy: "Desconhecido" },
+            { number: 83, symbol: "Bi", name: "Bismuto", mass: 208.98, category: "metaloides", state: "solid", discovery: "1753", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³", description: "Metal pesado com baixa toxicidade, usado em cosméticos e medicamentos.", melt: 271.5, boil: 1564, density: 9.78, electronConfiguration: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³", electronegativity: 2.02, electronAffinity: 91.2, ionizationEnergy: 703, atomicRadius: 207, thermalConductivity: 7.9, electricalConductivity: 0.77, specificHeat: 0.122, discoveryYear: 1753, discoveredBy: "Claude François Geoffroy" },
+            { number: 84, symbol: "Po", name: "Polônio", mass: 209, category: "metaloides", state: "solid", discovery: "1898", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴", description: "Elemento radioativo extremamente tóxico e raro.", melt: 254, boil: 962, density: 9.196, electronConfiguration: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴", electronegativity: 2.0, electronAffinity: 136, ionizationEnergy: 812, atomicRadius: 197, thermalConductivity: 20, electricalConductivity: 2.5, specificHeat: 0.12, discoveryYear: 1898, discoveredBy: "Marie Curie" },
+            { number: 85, symbol: "At", name: "Astato", mass: 210, category: "metaloides", state: "solid", discovery: "1940", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵", description: "Elemento radioativo raro, o halogênio mais pesado.", melt: 302, boil: 337, density: 7, electronConfiguration: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵", electronegativity: 2.2, electronAffinity: 270, ionizationEnergy: 899, atomicRadius: 202, thermalConductivity: 1.7, electricalConductivity: 0.017, specificHeat: 0.12, discoveryYear: 1940, discoveredBy: "Dale R. Corson, K. R. Mackenzie, Emilio Segrè" },
+            { number: 86, symbol: "Rn", name: "Radônio", mass: 222, category: "gases-nobres", state: "gas", discovery: "1900", electron: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶", description: "Gás nobre radioativo, perigoso para a saúde humana.", melt: -71, boil: -61.7, density: 0.00973, electronConfiguration: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶", electronegativity: 2.2, electronAffinity: 0, ionizationEnergy: 1037, atomicRadius: 220, thermalConductivity: 0.00361, electricalConductivity: null, specificHeat: 0.094, discoveryYear: 1900, discoveredBy: "Friedrich Ernst Dorn" },
+            { number: 87, symbol: "Fr", name: "Frâncio", mass: 223, category: "metais-alcalinos", state: "solid", discovery: "1939", electron: "[Rn] 7s¹", description: "Metal alcalino extremamente radioativo e raro.", melt: 27, boil: 677, density: 1.87, electronConfiguration: "[Rn] 7s¹", electronegativity: 0.7, electronAffinity: 44, ionizationEnergy: 380, atomicRadius: 348, thermalConductivity: 15, electricalConductivity: 3, specificHeat: 0.12, discoveryYear: 1939, discoveredBy: "Marguerite Perey" },
+            { number: 88, symbol: "Ra", name: "Rádio", mass: 226, category: "alcalino-terrosos", state: "solid", discovery: "1898", electron: "[Rn] 7s²", description: "Elemento radioativo histórico usado em pinturas luminosas.", melt: 700, boil: 1737, density: 5.5, electronConfiguration: "[Rn] 7s²", electronegativity: 0.9, electronAffinity: 9.65, ionizationEnergy: 509.3, atomicRadius: 283, thermalConductivity: 18.6, electricalConductivity: 1.0, specificHeat: 0.12, discoveryYear: 1898, discoveredBy: "Marie Curie e Pierre Curie" },
+            { number: 89, symbol: "Ac", name: "Actínio", mass: 227, category: "actinideos", state: "solid", discovery: "1899", electron: "[Rn] 6d¹ 7s²", description: "Primeiro elemento da série dos actinídeos, radioativo.", melt: 1050, boil: 3200, density: 10.07, electronConfiguration: "[Rn] 6d¹ 7s²", electronegativity: 1.1, electronAffinity: 33.77, ionizationEnergy: 499, atomicRadius: 260, thermalConductivity: 12, electricalConductivity: 1.2, specificHeat: 0.12, discoveryYear: 1899, discoveredBy: "André-Louis Debierne" },
+            { number: 90, symbol: "Th", name: "Tório", mass: 232.04, category: "actinideos", state: "solid", discovery: "1828", electron: "[Rn] 6d² 7s²", description: "Actinídeo usado como combustível nuclear alternativo.", melt: 1750, boil: 4788, density: 11.72, electronConfiguration: "[Rn] 6d² 7s²", electronegativity: 1.3, electronAffinity: 112, ionizationEnergy: 587, atomicRadius: 237, thermalConductivity: 54.0, electricalConductivity: 6.7, specificHeat: 0.113, discoveryYear: 1828, discoveredBy: "Jöns Jakob Berzelius" },
+            { number: 91, symbol: "Pa", name: "Protactínio", mass: 231.04, category: "actinideos", state: "solid", discovery: "1913", electron: "[Rn] 5f² 6d¹ 7s²", description: "Elemento radioativo raro e muito denso.", melt: 1572, boil: 4000, density: 15.37, electronConfiguration: "[Rn] 5f² 6d¹ 7s²", electronegativity: 1.5, electronAffinity: 53.03, ionizationEnergy: 568, atomicRadius: 243, thermalConductivity: 47, electricalConductivity: 5.7, specificHeat: 0.12, discoveryYear: 1913, discoveredBy: "Kasimir Fajans e Oswald Helmuth Göhring" },
+            { number: 92, symbol: "U", name: "Urânio", mass: 238.03, category: "actinideos", state: "solid", discovery: "1789", electron: "[Rn] 5f³ 6d¹ 7s²", description: "Elemento mais pesado encontrado naturalmente, usado em energia nuclear.", melt: 1132.2, boil: 4131, density: 19.1, electronConfiguration: "[Rn] 5f³ 6d¹ 7s²", electronegativity: 1.38, electronAffinity: 50.94, ionizationEnergy: 597.6, atomicRadius: 240, thermalConductivity: 27.5, electricalConductivity: 3.8, specificHeat: 0.116, discoveryYear: 1789, discoveredBy: "Martin Heinrich Klaproth" },
+            { number: 93, symbol: "Np", name: "Netúnio", mass: 237, category: "actinideos", state: "solid", discovery: "1940", electron: "[Rn] 5f⁴ 6d¹ 7s²", description: "Primeiro elemento transurânico sintetizado.", melt: 644, boil: 4000, density: 20.45, electronConfiguration: "[Rn] 5f⁴ 6d¹ 7s²", electronegativity: 1.36, electronAffinity: 45.85, ionizationEnergy: 604.5, atomicRadius: 221, thermalConductivity: 6.3, electricalConductivity: 0.82, specificHeat: 0.12, discoveryYear: 1940, discoveredBy: "Edwin McMillan e Philip H. Abelson" },
+            { number: 94, symbol: "Pu", name: "Plutônio", mass: 244, category: "actinideos", state: "solid", discovery: "1940", electron: "[Rn] 5f⁶ 7s²", description: "Elemento usado em armas nucleares e reatores.", melt: 639.4, boil: 3228, density: 19.84, electronConfiguration: "[Rn] 5f⁶ 7s²", electronegativity: 1.28, electronAffinity: 48.33, ionizationEnergy: 584.7, atomicRadius: 243, thermalConductivity: 6.74, electricalConductivity: 0.67, specificHeat: 0.13, discoveryYear: 1940, discoveredBy: "Glenn T. Seaborg, Arthur Wahl, Joseph W. Kennedy, Edwin McMillan" },
+            { number: 95, symbol: "Am", name: "Amerício", mass: 243, category: "actinideos", state: "solid", discovery: "1944", electron: "[Rn] 5f⁷ 7s²", description: "Elemento radioativo usado em detectores de fumaça.", melt: 1176, boil: 2011, density: 12, electronConfiguration: "[Rn] 5f⁷ 7s²", electronegativity: 1.13, electronAffinity: 9.93, ionizationEnergy: 578, atomicRadius: 244, thermalConductivity: 10, electricalConductivity: 2.2, specificHeat: 0.11, discoveryYear: 1944, discoveredBy: "Glenn T. Seaborg, Ralph A. James, Leon O. Morgan, Albert Ghiorso" },
+            { number: 96, symbol: "Cm", name: "Cúrio", mass: 247, category: "actinideos", state: "solid", discovery: "1944", electron: "[Rn] 5f⁷ 6d¹ 7s²", description: "Elemento radioativo sintético, muito denso.", melt: 1345, boil: 3110, density: 13.51, electronConfiguration: "[Rn] 5f⁷ 6d¹ 7s²", electronegativity: 1.28, electronAffinity: 27.17, ionizationEnergy: 581, atomicRadius: 245, thermalConductivity: 8, electricalConductivity: 1.1, specificHeat: 0.12, discoveryYear: 1944, discoveredBy: "Glenn T. Seaborg, Ralph A. James, Albert Ghiorso" },
+            { number: 97, symbol: "Bk", name: "Berquélio", mass: 247, category: "actinideos", state: "solid", discovery: "1949", electron: "[Rn] 5f⁹ 7s²", description: "Elemento transurânico radioativo sintético.", melt: 986, boil: 2627, density: 14.78, electronConfiguration: "[Rn] 5f⁹ 7s²", electronegativity: 1.3, electronAffinity: 165.24, ionizationEnergy: 601, atomicRadius: 244, thermalConductivity: 10, electricalConductivity: 1.6, specificHeat: 0.12, discoveryYear: 1949, discoveredBy: "Stanley G. Thompson, Albert Ghiorso, Glenn T. Seaborg" },
+            { number: 98, symbol: "Cf", name: "Califórnio", mass: 251, category: "actinideos", state: "solid", discovery: "1950", electron: "[Rn] 5f¹⁰ 7s²", description: "Elemento radioativo usado em fontes de nêutrons.", melt: 900, boil: 1470, density: 15.1, electronConfiguration: "[Rn] 5f¹⁰ 7s²", electronegativity: 1.3, electronAffinity: 97, ionizationEnergy: 608, atomicRadius: 245, thermalConductivity: 10, electricalConductivity: 1.5, specificHeat: 0.12, discoveryYear: 1950, discoveredBy: "Stanley G. Thompson, Kenneth Street Jr., Albert Ghiorso, Glenn T. Seaborg" },
+            { number: 99, symbol: "Es", name: "Einstênio", mass: 252, category: "actinideos", state: "solid", discovery: "1952", electron: "[Rn] 5f¹¹ 7s²", description: "Elemento sintético nomeado em homenagem a Albert Einstein.", melt: 860, boil: 996, density: 8.84, electronConfiguration: "[Rn] 5f¹¹ 7s²", electronegativity: 1.3, electronAffinity: 29, ionizationEnergy: 619, atomicRadius: 245, thermalConductivity: 10, electricalConductivity: 1.2, specificHeat: 0.12, discoveryYear: 1952, discoveredBy: "Albert Ghiorso et al." },
+            { number: 100, symbol: "Fm", name: "Férmio", mass: 257, category: "actinideos", state: "solid", discovery: "1952", electron: "[Rn] 5f¹² 7s²", description: "Elemento sintético nomeado em homenagem a Enrico Fermi.", melt: 1527, boil: 1127, density: 9.7, electronConfiguration: "[Rn] 5f¹² 7s²", electronegativity: 1.3, electronAffinity: 33.96, ionizationEnergy: 627, atomicRadius: 245, thermalConductivity: 10, electricalConductivity: 1.1, specificHeat: 0.12, discoveryYear: 1952, discoveredBy: "Albert Ghiorso et al." },
+            { number: 101, symbol: "Md", name: "Mendelévio", mass: 258, category: "actinideos", state: "solid", discovery: "1955", electron: "[Rn] 5f¹³ 7s²", description: "Elemento sintético nomeado em homenagem a Dmitri Mendeleev.", melt: 827, boil: 1327, density: 10.3, electronConfiguration: "[Rn] 5f¹³ 7s²", electronegativity: 1.3, electronAffinity: 93.91, ionizationEnergy: 635, atomicRadius: 246, thermalConductivity: 10, electricalConductivity: 1.0, specificHeat: 0.12, discoveryYear: 1955, discoveredBy: "Albert Ghiorso, Glenn T. Seaborg, Bernard G. Harvey, Gregory R. Choppin, Stanley G. Thompson" },
+            { number: 102, symbol: "No", name: "Nobélio", mass: 259, category: "actinideos", state: "solid", discovery: "1966", electron: "[Rn] 5f¹⁴ 7s²", description: "Elemento sintético nomeado em homenagem a Alfred Nobel.", melt: 827, boil: 1327, density: 9.9, electronConfiguration: "[Rn] 5f¹⁴ 7s²", electronegativity: 1.3, electronAffinity: 223.22, ionizationEnergy: 642, atomicRadius: 246, thermalConductivity: 10, electricalConductivity: 0.9, specificHeat: 0.12, discoveryYear: 1966, discoveredBy: "Georgy Flerov et al." },
+            { number: 103, symbol: "Lr", name: "Laurêncio", mass: 266, category: "actinideos", state: "solid", discovery: "1961", electron: "[Rn] 5f¹⁴ 7s² 7p¹", description: "Último elemento da série dos actinídeos.", melt: 1627, boil: 1327, density: 15.6, electronConfiguration: "[Rn] 5f¹⁴ 7s² 7p¹", electronegativity: 1.3, electronAffinity: 30.04, ionizationEnergy: 470, atomicRadius: 246, thermalConductivity: 10, electricalConductivity: 0.8, specificHeat: 0.12, discoveryYear: 1961, discoveredBy: "Albert Ghiorso, Torbjørn Sikkeland, Almon E. Larsh, Robert M. Latimer" },
+            { number: 104, symbol: "Rf", name: "Rutherfórdio", mass: 267, category: "transicao", state: "solid", discovery: "1969", electron: "[Rn] 5f¹⁴ 6d² 7s²", description: "Primeiro elemento transactinídeo, superpesado.", melt: 2100, boil: 5500, density: 23.2, electronConfiguration: "[Rn] 5f¹⁴ 6d² 7s²", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 580, atomicRadius: 247, thermalConductivity: 10, electricalConductivity: 0.7, specificHeat: 0.12, discoveryYear: 1969, discoveredBy: "Georgy Flerov et al." },
+            { number: 105, symbol: "Db", name: "Dúbnio", mass: 268, category: "transicao", state: "solid", discovery: "1970", electron: "[Rn] 5f¹⁴ 6d³ 7s²", description: "Elemento superpesado sintético e radioativo.", melt: 2200, boil: 5600, density: 29.3, electronConfiguration: "[Rn] 5f¹⁴ 6d³ 7s²", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 590, atomicRadius: 248, thermalConductivity: 10, electricalConductivity: 0.6, specificHeat: 0.12, discoveryYear: 1970, discoveredBy: "Georgy Flerov et al." },
+            { number: 106, symbol: "Sg", name: "Seabórgio", mass: 269, category: "transicao", state: "solid", discovery: "1974", electron: "[Rn] 5f¹⁴ 6d⁴ 7s²", description: "Elemento superpesado nomeado em homenagem a Glenn T. Seaborg.", melt: 2300, boil: 5700, density: 35.0, electronConfiguration: "[Rn] 5f¹⁴ 6d⁴ 7s²", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 600, atomicRadius: 249, thermalConductivity: 10, electricalConductivity: 0.5, specificHeat: 0.12, discoveryYear: 1974, discoveredBy: "Georgy Flerov et al." },
+            { number: 107, symbol: "Bh", name: "Bóhrio", mass: 270, category: "transicao", state: "solid", discovery: "1981", electron: "[Rn] 5f¹⁴ 6d⁵ 7s²", description: "Elemento superpesado extremamente radioativo.", melt: 2400, boil: 5800, density: 37.1, electronConfiguration: "[Rn] 5f¹⁴ 6d⁵ 7s²", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 610, atomicRadius: 250, thermalConductivity: 10, electricalConductivity: 0.4, specificHeat: 0.12, discoveryYear: 1981, discoveredBy: "Peter Armbruster, Gottfried Münzenberg" },
+            { number: 108, symbol: "Hs", name: "Hássio", mass: 277, category: "transicao", state: "solid", discovery: "1984", electron: "[Rn] 5f¹⁴ 6d⁶ 7s²", description: "Elemento superpesado com isótopos de vida muito curta.", melt: 2500, boil: 5900, density: 40.7, electronConfiguration: "[Rn] 5f¹⁴ 6d⁶ 7s²", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 620, atomicRadius: 251, thermalConductivity: 10, electricalConductivity: 0.3, specificHeat: 0.12, discoveryYear: 1984, discoveredBy: "Peter Armbruster, Gottfried Münzenberg" },
+            { number: 109, symbol: "Mt", name: "Meitnério", mass: 278, category: "desconhecidos", state: "solid", discovery: "1982", electron: "[Rn] 5f¹⁴ 6d⁷ 7s²", description: "Elemento sintético nomeado em homenagem a Lise Meitner.", melt: 2600, boil: 6000, density: 37.4, electronConfiguration: "[Rn] 5f¹⁴ 6d⁷ 7s²", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 630, atomicRadius: 252, thermalConductivity: 10, electricalConductivity: 0.2, specificHeat: 0.12, discoveryYear: 1982, discoveredBy: "Peter Armbruster, Gottfried Münzenberg" },
+            { number: 110, symbol: "Ds", name: "Darmstádtio", mass: 281, category: "desconhecidos", state: "solid", discovery: "1994", electron: "[Rn] 5f¹⁴ 6d⁹ 7s¹", description: "Elemento superpesado sintetizado no GSI, Alemanha.", melt: 2700, boil: 6100, density: 34.8, electronConfiguration: "[Rn] 5f¹⁴ 6d⁹ 7s¹", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 640, atomicRadius: 253, thermalConductivity: 10, electricalConductivity: 0.1, specificHeat: 0.12, discoveryYear: 1994, discoveredBy: "Sigurd Hofmann et al." },
+            { number: 111, symbol: "Rg", name: "Roentgênio", mass: 282, category: "desconhecidos", state: "solid", discovery: "1994", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s¹", description: "Elemento nomeado em homenagem a Wilhelm Conrad Röntgen.", melt: 2800, boil: 6200, density: 28.7, electronConfiguration: "[Rn] 5f¹⁴ 6d¹⁰ 7s¹", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 650, atomicRadius: 254, thermalConductivity: 10, electricalConductivity: 0.09, specificHeat: 0.12, discoveryYear: 1994, discoveredBy: "Sigurd Hofmann et al." },
+            { number: 112, symbol: "Cn", name: "Copernício", mass: 285, category: "desconhecidos", state: "liquid", discovery: "1996", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s²", description: "Elemento que pode ser líquido à temperatura ambiente.", melt: 283, boil: 340, density: 14.0, electronConfiguration: "[Rn] 5f¹⁴ 6d¹⁰ 7s²", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 660, atomicRadius: 255, thermalConductivity: 10, electricalConductivity: 0.08, specificHeat: 0.12, discoveryYear: 1996, discoveredBy: "Sigurd Hofmann et al." },
+            { number: 113, symbol: "Nh", name: "Nihônio", mass: 286, category: "desconhecidos", state: "solid", discovery: "2004", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹", description: "Primeiro elemento descoberto na Ásia (Japão).", melt: 430, boil: 1130, density: 16, electronConfiguration: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹", electronegativity: 1.3, electronAffinity: 66.6, ionizationEnergy: 670, atomicRadius: 256, thermalConductivity: 10, electricalConductivity: 0.07, specificHeat: 0.12, discoveryYear: 2004, discoveredBy: "RIKEN (Japão)" },
+            { number: 114, symbol: "Fl", name: "Fleróvio", mass: 289, category: "desconhecidos", state: "liquid", discovery: "1999", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²", description: "Elemento superpesado que pode ser um gás nobre líquido.", melt: 340, boil: 420, density: 14, electronConfiguration: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²", electronegativity: 1.3, electronAffinity: null, ionizationEnergy: 680, atomicRadius: 257, thermalConductivity: 10, electricalConductivity: 0.06, specificHeat: 0.12, discoveryYear: 1999, discoveredBy: "Joint Institute for Nuclear Research" },
+            { number: 115, symbol: "Mc", name: "Moscóvio", mass: 290, category: "desconhecidos", state: "solid", discovery: "2003", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³", description: "Elemento superpesado sintetizado na Rússia.", melt: 700, boil: 1400, density: 13.5, electronConfiguration: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³", electronegativity: 1.3, electronAffinity: 35.3, ionizationEnergy: 690, atomicRadius: 258, thermalConductivity: 10, electricalConductivity: 0.05, specificHeat: 0.12, discoveryYear: 2003, discoveredBy: "Joint Institute for Nuclear Research" },
+            { number: 116, symbol: "Lv", name: "Livermório", mass: 293, category: "desconhecidos", state: "solid", discovery: "2000", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴", description: "Elemento nomeado em homenagem ao Lawrence Livermore National Laboratory.", melt: 709, boil: 1085, density: 12.9, electronConfiguration: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴", electronegativity: 1.3, electronAffinity: 74.9, ionizationEnergy: 700, atomicRadius: 259, thermalConductivity: 10, electricalConductivity: 0.04, specificHeat: 0.12, discoveryYear: 2000, discoveredBy: "Joint Institute for Nuclear Research" },
+            { number: 117, symbol: "Ts", name: "Tenesso", mass: 294, category: "desconhecidos", state: "solid", discovery: "2010", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵", description: "Segundo elemento mais recente descoberto, halogênio superpesado.", melt: 723, boil: 883, density: 7.2, electronConfiguration: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵", electronegativity: 1.3, electronAffinity: 165.9, ionizationEnergy: 710, atomicRadius: 260, thermalConductivity: 10, electricalConductivity: 0.03, specificHeat: 0.12, discoveryYear: 2010, discoveredBy: "Joint Institute for Nuclear Research" },
+            { number: 118, symbol: "Og", name: "Oganessônio", mass: 294, category: "desconhecidos", state: "gas", discovery: "2006", electron: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶", description: "Elemento mais pesado conhecido, gás nobre sintético.", melt: 325, boil: 450, density: 4.9, electronConfiguration: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶", electronegativity: 1.3, electronAffinity: 5.403, ionizationEnergy: 720, atomicRadius: 261, thermalConductivity: 10, electricalConductivity: 0.02, specificHeat: 0.12, discoveryYear: 2006, discoveredBy: "Joint Institute for Nuclear Research" }
+        ];
+
+        const positions = {
+            1: [1, 2], 2: [1, 19],
+
+            3: [2, 2], 4: [2, 3],
+            5: [2, 14], 6: [2, 15], 7: [2, 16], 8: [2, 17], 9: [2, 18], 10: [2, 19],
+
+            11: [3, 2], 12: [3, 3],
+            13: [3, 14], 14: [3, 15], 15: [3, 16], 16: [3, 17], 17: [3, 18], 18: [3, 19],
+
+            19: [4, 2], 20: [4, 3],
+            21: [4, 4], 22: [4, 5], 23: [4, 6], 24: [4, 7], 25: [4, 8], 26: [4, 9], 27: [4, 10], 28: [4, 11], 29: [4, 12], 30: [4, 13],
+            31: [4, 14], 32: [4, 15], 33: [4, 16], 34: [4, 17], 35: [4, 18], 36: [4, 19],
+
+            37: [5, 2], 38: [5, 3],
+            39: [5, 4], 40: [5, 5], 41: [5, 6], 42: [5, 7], 43: [5, 8], 44: [5, 9], 45: [5, 10], 46: [5, 11], 47: [5, 12], 48: [5, 13],
+            49: [5, 14], 50: [5, 15], 51: [5, 16], 52: [5, 17], 53: [5, 18], 54: [5, 19],
+
+            55: [6, 2], 56: [6, 3],
+            72: [6, 5], 73: [6, 6], 74: [6, 7], 75: [6, 8], 76: [6, 9], 77: [6, 10], 78: [6, 11], 79: [6, 12], 80: [6, 13],
+            81: [6, 14], 82: [6, 15], 83: [6, 16], 84: [6, 17], 85: [6, 18], 86: [6, 19],
+
+            87: [7, 2], 88: [7, 3],
+            104: [7, 5], 105: [7, 6], 106: [7, 7], 107: [7, 8], 108: [7, 9], 109: [7, 10], 110: [7, 11], 111: [7, 12], 112: [7, 13],
+            113: [7, 14], 114: [7, 15], 115: [7, 16], 116: [7, 17], 117: [7, 18], 118: [7, 19]
+        };
+
+        const lanthanides = [57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71];
+        const actinides = [89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103];
+
+        let lockedElement = null;
+        let hoveredElement = null;
+        let selectedElement = null;
+        let keyboardNavigationEnabled = true; // Ativado por padrão
+
+        // Função para verificar se a API key está configurada
+        function checkApiKey() {
+            if (!userApiKey) {
+                alert('Por favor, configure sua chave API primeiro clicando no botão "Aviso" no cabeçalho.');
+                document.getElementById('apiModal').style.display = 'block';
+                return false;
+            }
+            return true;
+        }
+
+        // Função para alternar entre a visualização da tabela, chat e quiz
+        function toggleView() {
+            if (isQuizView) {
+                // Voltar para a tabela periódica
+                isQuizView = false;
+                isChatView = false;
+                document.getElementById('periodic-table-container').style.display = 'block';
+                document.getElementById('chatContainer').style.display = 'none';
+                document.getElementById('quizContainer').style.display = 'none';
+                document.getElementById('toggleViewBtn').textContent = '▶ Jogar';
+
+                // Esconder barra inferior
+                document.getElementById('bottomSearch').style.display = 'none';
+
+                // Mostrar barra do cabeçalho
+                document.getElementById('headerSearch').style.display = 'block';
+            } else if (isChatView) {
+                // Voltar para a tabela periódica
+                isChatView = false;
+                document.getElementById('periodic-table-container').style.display = 'block';
+                document.getElementById('chatContainer').style.display = 'none';
+                document.getElementById('quizContainer').style.display = 'none';
+                document.getElementById('toggleViewBtn').textContent = '▶ Jogar';
+
+                // Esconder barra inferior
+                document.getElementById('bottomSearch').style.display = 'none';
+
+                // Mostrar barra do cabeçalho
+                document.getElementById('headerSearch').style.display = 'block';
+            } else {
+                // Verificar se a API key está configurada antes de iniciar o quiz
+                if (!checkApiKey()) return;
+
+                // Iniciar o quiz
+                startQuiz();
+            }
+        }
+
+        // Função para iniciar o quiz
+        async function startQuiz() {
+            isQuizView = true;
+            isChatView = false;
+            quizCompleted = false;
+
+            // Esconder tabela e chat, mostrar quiz
+            document.getElementById('periodic-table-container').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('quizResults').style.display = 'none';
+            document.getElementById('toggleViewBtn').textContent = 'Voltar';
+
+            // Esconder barra inferior
+            document.getElementById('bottomSearch').style.display = 'none';
+
+            // Esconder barra do cabeçalho
+            document.getElementById('headerSearch').style.display = 'none';
+
+            // Resetar variáveis do quiz
+            currentQuestionIndex = 0;
+            quizScore = 0;
+            selectedOption = null;
+            answeredQuestions = [];
+            currentQuizId = `quiz_${Date.now()}`;
+
+            // Gerar perguntas do quiz
+            try {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'loading-message';
+                loadingDiv.innerHTML = `
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Gerando quiz...</div>
+                    </div>
+                `;
+                document.getElementById('quizQuestion').appendChild(loadingDiv);
+
+                quizQuestions = await generateQuizQuestions();
+                document.getElementById('quizQuestion').removeChild(loadingDiv);
+
+                // Salvar o quiz no histórico
+                const quizTitle = `Quiz de Química - ${new Date().toLocaleDateString()}`;
+                chatHistory[currentQuizId] = {
+                    messages: [],
+                    title: quizTitle,
+                    timestamp: Date.now(),
+                    isQuiz: true,
+                    quizData: {
+                        questions: quizQuestions,
+                        currentQuestionIndex: 0,
+                        score: 0,
+                        answeredQuestions: [],
+                        completed: false
+                    }
+                };
+                saveChatsToLocalStorage();
+                updateSearchHistory();
+
+                showQuestion();
+            } catch (error) {
+                console.error('Erro ao gerar quiz:', error);
+                document.getElementById('quizQuestion').innerHTML = `
+                    <div class="message-container bot-message-container">
+                        <div class="message-content bot-message-content">ERRO: ${error.message}</div>
+                    </div>
+                `;
+                toggleView(); // Voltar para a tabela periódica em caso de erro
+            }
+        }
+
+        // Função para gerar perguntas do quiz usando a IA
+        async function generateQuizQuestions() {
+            const prompt = `Gere um quiz de química com 10 perguntas de múltipla escolha. Cada pergunta deve ter 4 opções (A, B, C, D) e apenas uma resposta correta. As perguntas devem cobrir diversos tópicos de química (tabela periódica, elementos químicos, reações, ligações, etc.). Formate cada pergunta como um objeto JSON com as propriedades: question (texto da pergunta), options (array com as 4 opções), answer (índice da resposta correta) e explanation (explicação da resposta). Retorne apenas um array JSON válido com 10 perguntas.`;
+
+            try {
+                const response = await fetch(OPENROUTER_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        "Authorization": `Bearer ${userApiKey}`,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": window.location.href,
+                        "X-Title": "AtomiChat"
+                    },
+                    body: JSON.stringify({
+                        "model": MODEL_NAME,
+                        "messages": [{
+                            "role": "user",
+                            "content": prompt
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+
+                // Extrair o JSON da resposta
+                const jsonMatch = content.match(/\[[\s\S]*\]/);
+                if (!jsonMatch) {
+                    throw new Error("Não foi possível encontrar JSON na resposta");
+                }
+
+                return JSON.parse(jsonMatch[0]);
+
+            } catch (error) {
+                console.error('Falha ao gerar quiz:', error.message);
+                throw new Error("Falha ao gerar o quiz: " + error.message);
+            }
+        }
+
+        // Função para mostrar a pergunta atual do quiz
+        function showQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) {
+                finishQuiz();
+                return;
+            }
+
+            const question = quizQuestions[currentQuestionIndex];
+            document.getElementById('quizQuestion').innerHTML = `<h3>${question.question}</h3>`;
+
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option';
+                optionDiv.innerHTML = `
+                    <input type="radio" name="quizOption" id="option${index}" value="${index}">
+                    <label for="option${index}">${String.fromCharCode(65 + index)}) ${option}</label>
+                `;
+
+                optionDiv.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        optionDiv.querySelector('input').checked = true;
+                    }
+                    selectedOption = index;
+                    document.getElementById('confirmAnswerBtn').style.display = 'inline-block';
+                });
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            document.getElementById('quizFeedback').innerHTML = '';
+            document.getElementById('nextQuestionBtn').style.display = 'none';
+            document.getElementById('confirmAnswerBtn').style.display = 'none';
+
+            document.getElementById('quizProgress').textContent = `Pergunta ${currentQuestionIndex + 1} de ${quizQuestions.length}`;
+            document.getElementById('quizScore').textContent = `Pontuação: ${quizScore}`;
+
+            if (chatHistory[currentQuizId]) {
+                chatHistory[currentQuizId].quizData = {
+                    questions: quizQuestions,
+                    currentQuestionIndex: currentQuestionIndex,
+                    score: quizScore,
+                    answeredQuestions: answeredQuestions,
+                    completed: false
+                };
+                saveChatsToLocalStorage();
+            }
+        }
+
+        function checkAnswer() {
+            if (selectedOption === null || answeredQuestions.includes(currentQuestionIndex)) {
+                return;
+            }
+
+            const question = quizQuestions[currentQuestionIndex];
+            const isCorrect = selectedOption === question.answer;
+
+            answeredQuestions.push(currentQuestionIndex);
+
+            if (isCorrect) {
+                quizScore++;
+                document.getElementById('quizScore').textContent = `Pontuação: ${quizScore}`;
+            }
+
+            const feedbackDiv = document.getElementById('quizFeedback');
+            feedbackDiv.innerHTML = `
+                <p class="${isCorrect ? 'correct' : 'incorrect'}">
+                    ${isCorrect ? '✅ Correto!' : '❌ Incorreto!'}
+                </p>
+                <p>Resposta correta: ${String.fromCharCode(65 + question.answer)}) ${question.options[question.answer]}</p>
+                <p>${question.explanation}</p>
+            `;
+            feedbackDiv.style.display = 'block';
+
+            document.querySelectorAll('.quiz-option input').forEach(input => {
+                input.disabled = true;
+            });
+
+            document.getElementById('confirmAnswerBtn').style.display = 'none';
+
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                document.getElementById('nextQuestionBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('nextQuestionBtn').style.display = 'inline-block';
+                document.getElementById('nextQuestionBtn').textContent = 'Ver Resultado';
+            }
+
+            if (chatHistory[currentQuizId]) {
+                chatHistory[currentQuizId].quizData = {
+                    questions: quizQuestions,
+                    currentQuestionIndex: currentQuestionIndex,
+                    score: quizScore,
+                    answeredQuestions: answeredQuestions,
+                    completed: currentQuestionIndex >= quizQuestions.length - 1
+                };
+                saveChatsToLocalStorage();
+            }
+        }
+
+        // Função para avançar para a próxima pergunta
+        function nextQuestion() {
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                selectedOption = null;
+                document.getElementById('quizFeedback').style.display = 'none';
+                showQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        // Função para finalizar o quiz
+        function finishQuiz() {
+            quizCompleted = true;
+
+            const percentage = Math.round((quizScore / quizQuestions.length) * 100);
+            const score = (quizScore / quizQuestions.length) * 10;
+            let message = '';
+
+            if (score >= 9) {
+                message = 'Excelente! Você é um mestre da química! 🎉';
+            } else if (score >= 7) {
+                message = 'Muito bom! Você tem um bom conhecimento de química. 👍';
+            } else if (score >= 5) {
+                message = 'Bom trabalho! Continue estudando para melhorar. 💪';
+            } else {
+                message = 'Não desanime! A química é desafiadora, mas com prática você melhora. 📚';
+            }
+
+            document.getElementById('quizQuestion').style.display = 'none';
+            document.getElementById('quizOptions').style.display = 'none';
+            document.getElementById('quizFeedback').style.display = 'none';
+            document.getElementById('nextQuestionBtn').style.display = 'none';
+            document.getElementById('quizResults').style.display = 'block';
+
+            document.getElementById('quizFinalScore').textContent = `Sua nota: ${score.toFixed(1)}/10`;
+            document.getElementById('quizFinalMessage').textContent = message;
+
+            if (chatHistory[currentQuizId]) {
+                chatHistory[currentQuizId].quizData = {
+                    questions: quizQuestions,
+                    currentQuestionIndex: currentQuestionIndex,
+                    score: quizScore,
+                    answeredQuestions: answeredQuestions,
+                    completed: true
+                };
+                saveChatsToLocalStorage();
+                updateSearchHistory();
+            }
+        }
+
+        // Função principal para enviar mensagens
+        async function sendMessage(message, isBottom = false) {
+            if (isProcessing || !message.trim()) {
+                const input = isBottom ? document.getElementById('perguntaInputBottom') : document.getElementById('perguntaInput');
+                showInputError(input);
+                return;
+            }
+
+            if (!checkApiKey()) return;
+
+            isProcessing = true;
+            const input = isBottom ? document.getElementById('perguntaInputBottom') : document.getElementById('perguntaInput');
+
+            input.value = '';
+            if (isBottom) {
+                document.getElementById('submitBtnBottom').disabled = true;
+                adjustTextareaHeight(input);
+            } else {
+                hideHeaderSearchInChat();
+            }
+
+            if (!isChatView) {
+                isChatView = true;
+                isQuizView = false;
+                document.getElementById('periodic-table-container').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'block';
+                document.getElementById('quizContainer').style.display = 'none';
+                document.getElementById('toggleViewBtn').textContent = 'Voltar';
+            }
+
+            const chatContainer = document.getElementById('chatContainer');
+
+            chatContainer.innerHTML += `
+                <div class="message-container user-message-container">
+                    <div class="message-content user-message-content">${escapeHtml(message)}</div>
+                </div>
+            `;
+
+            if (!firstMessageSent) {
+                firstMessageSent = true;
+                document.getElementById('bottomSearch').style.display = 'block';
+                document.querySelector('.app-container').style.paddingBottom = '120px';
+            }
+
+            scrollToBottomInstant();
+            (isBottom ? document.getElementById('perguntaInputBottom') : document.getElementById('perguntaInput')).focus();
+
+            const loadingId = 'loading-' + Date.now();
+            chatContainer.innerHTML += `
+                <div id="${loadingId}" class="loading-message">
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <div class 'loading-text'>Processando...</div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const response = await generateAIResponse(message);
+                document.getElementById(loadingId).remove();
+
+                chatContainer.innerHTML += `
+                    <div class="message-container bot-message-container">
+                        <div class="message-content bot-message-content">${marked.parse(response)}</div>
+                    </div>
+                `;
+
+                updateChatHistory(message, response, !isBottom);
+                scrollToBottomInstant();
+
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                chatContainer.innerHTML += `
+                    <div class="message-container bot-message-container">
+                        <div class="message-content bot-message-content">
+                            ERRO: ${escapeHtml(error.message.replace('Error: ', ''))}
+                        </div>
+                    </div>
+                `;
+            } finally {
+                isProcessing = false;
+                if (isBottom) {
+                    document.getElementById('submitBtnBottom').disabled = false;
+                }
+            }
+        }
+
+        // Função para gerar resposta da IA
+        async function generateAIResponse(message) {
+            try {
+                const response = await fetch(OPENROUTER_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        "Authorization": `Bearer ${userApiKey}`,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": window.location.href,
+                        "X-Title": "AtomiChat"
+                    },
+                    body: JSON.stringify({
+                        "model": MODEL_NAME,
+                        "messages": [{
+                            "role": "user",
+                            "content": `Você é o ATOMICHAT, um assistente especializado em química. Responda à pergunta:\n\n"${message}"`
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+
+            } catch (error) {
+                console.error('Falha ao gerar resposta:', error.message);
+                throw new Error("Falha ao gerar resposta: " + error.message);
+            }
+        }
+
+        // Funções auxiliares
+        function scrollToBottomInstant() {
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            const newHeight = Math.min(textarea.scrollHeight, 150);
+            textarea.style.height = newHeight + 'px';
+            textarea.style.overflowY = newHeight >= 150 ? 'auto' : 'hidden';
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;")
+                .replace(/\n/g, '<br>');
+        }
+
+        function updateChatHistory(pergunta, resposta, isNewChat) {
+            if (isNewChat || !currentChatId) {
+                currentChatId = `chat_${Date.now()}`;
+                chatHistory[currentChatId] = {
+                    messages: [],
+                    title: createChatTitle(pergunta),
+                    timestamp: Date.now()
+                };
+            }
+
+            chatHistory[currentChatId].messages.push(
+                { content: pergunta, is_user: true },
+                { content: resposta, is_user: false }
+            );
+            chatHistory[currentChatId].timestamp = Date.now();
+
+            saveChatsToLocalStorage();
+            updateSearchHistory();
+        }
+
+        function createChatTitle(pergunta) {
+            const palavras = pergunta.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+                .split(' ')
+                .filter(palavra => palavra.length > 3);
+
+            const titulo = palavras.slice(0, 5).join(' ');
+
+            return titulo || "Conversa sobre química";
+        }
+
+        function saveChatsToLocalStorage() {
+            localStorage.setItem('atomichat_history', JSON.stringify(chatHistory));
+        }
+
+        function loadChatsFromLocalStorage() {
+            const savedChats = localStorage.getItem('atomichat_history');
+            if (savedChats) {
+                chatHistory = JSON.parse(savedChats);
+                updateSearchHistory();
+            }
+        }
+
+        function updateSearchHistory() {
+            const searchHistory = document.getElementById('searchHistory');
+            const emptyHistory = document.getElementById('emptyHistory');
+            const historyContainer = searchHistory;
+
+            while (historyContainer.firstChild) {
+                historyContainer.removeChild(historyContainer.firstChild);
+            }
+
+            if (Object.keys(chatHistory).length === 0) {
+                const emptyItem = document.createElement('div');
+                emptyItem.className = 'search-history-empty';
+                emptyItem.id = 'emptyHistory';
+                emptyItem.textContent = 'Nenhum histórico de pesquisa';
+                historyContainer.appendChild(emptyItem);
+            } else {
+                const sortedChats = Object.entries(chatHistory).sort((a, b) => b[1].timestamp - a[1].timestamp);
+
+                sortedChats.forEach(([chatId, chatData]) => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'search-history-item';
+                    historyItem.textContent = chatData.title;
+                    historyItem.addEventListener('click', () => {
+                        if (chatData.isQuiz) {
+                            switchToQuiz(chatId);
+                        } else {
+                            switchToChat(chatId);
+                        }
+                        document.getElementById('searchHistory').style.display = 'none';
+                        if (isChatView) {
+                            hideHeaderSearchInChat();
+                        }
+                    });
+                    historyContainer.appendChild(historyItem);
+                });
+            }
+
+            const clearButton = document.createElement('div');
+            clearButton.className = 'search-history-clear';
+            clearButton.id = 'clearHistory';
+            clearButton.textContent = 'Limpar histórico';
+            clearButton.addEventListener('click', clearAllChats);
+            historyContainer.appendChild(clearButton);
+        }
+
+        function switchToChat(chatId) {
+            if (!chatHistory[chatId]) return;
+
+            currentChatId = chatId;
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = '';
+
+            chatHistory[chatId].messages.forEach(msg => {
+                if (msg.is_user) {
+                    chatContainer.innerHTML += `
+                        <div class="message-container user-message-container">
+                            <div class="message-content user-message-content">${escapeHtml(msg.content)}</div>
+                        </div>
+                    `;
+                } else {
+                    chatContainer.innerHTML += `
+                        <div class="message-container bot-message-container">
+                            <div class="message-content bot-message-content">${marked.parse(msg.content)}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('bottomSearch').style.display = 'block';
+            document.querySelector('.app-container').style.paddingBottom = '120px';
+
+            if (!isChatView) {
+                isChatView = true;
+                isQuizView = false;
+                document.getElementById('periodic-table-container').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'block';
+                document.getElementById('quizContainer').style.display = 'none';
+                document.getElementById('toggleViewBtn').textContent = 'Voltar';
+            }
+        }
+
+        function switchToQuiz(quizId) {
+            if (!chatHistory[quizId] || !chatHistory[quizId].isQuiz) return;
+
+            currentQuizId = quizId;
+            const quizData = chatHistory[quizId].quizData;
+
+            isQuizView = true;
+            isChatView = false;
+
+            quizQuestions = quizData.questions;
+            currentQuestionIndex = quizData.currentQuestionIndex;
+            quizScore = quizData.score;
+            answeredQuestions = quizData.answeredQuestions || [];
+            quizCompleted = quizData.completed || false;
+
+            document.getElementById('periodic-table-container').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('toggleViewBtn').textContent = 'Voltar';
+
+            document.getElementById('bottomSearch').style.display = 'none';
+            document.getElementById('headerSearch').style.display = 'none';
+
+            if (quizCompleted) {
+                document.getElementById('quizQuestion').style.display = 'none';
+                document.getElementById('quizOptions').style.display = 'none';
+                document.getElementById('quizFeedback').style.display = 'none';
+                document.getElementById('quizResults').style.display = 'block';
+                showQuizResults(quizData);
+            } else {
+                document.getElementById('quizQuestion').style.display = 'block';
+                document.getElementById('quizOptions').style.display = 'block';
+                document.getElementById('quizFeedback').style.display = 'block';
+                document.getElementById('quizResults').style.display = 'none';
+                showQuestion();
+            }
+        }
+
+        function showQuizResults(quizData) {
+            const percentage = Math.round((quizData.score / quizData.questions.length) * 100);
+            const score = (quizData.score / quizData.questions.length) * 10;
+            let message = '';
+
+            if (score >= 9) {
+                message = 'Excelente! Você é um mestre da química! 🎉';
+            } else if (score >= 7) {
+                message = 'Muito bom! Você tem um bom conhecimento de química. 👍';
+            } else if (score >= 5) {
+                message = 'Bom trabalho! Continue estudando para melhorar. 💪';
+            } else {
+                message = 'Não desanime! A química é desafiadora, mas com prática você melhora. 📚';
+            }
+
+            document.getElementById('quizFinalScore').textContent = `Sua nota: ${score.toFixed(1)}/10`;
+            document.getElementById('quizFinalMessage').textContent = message;
+        }
+
+        function clearAllChats() {
+            if (confirm('Tem certeza que deseja limpar todo o histórico de conversas?')) {
+                chatHistory = {};
+                currentChatId = null;
+                saveChatsToLocalStorage();
+                updateSearchHistory();
+            }
+        }
+
+        function hideHeaderSearchInChat() {
+            document.getElementById('headerSearch').style.display = 'none';
+        }
+
+        function showInputError(input) {
+            input.classList.add('error');
+            setTimeout(() => {
+                input.classList.remove('error');
+            }, 1000);
+        }
+
+        // Funções para a tabela periódica
+        function createPeriodicTable() {
+            const table = document.getElementById('periodic-table');
+            table.innerHTML = '';
+
+            for (let col = 1; col <= 18; col++) {
+                const groupNumber = document.createElement('div');
+                groupNumber.className = 'group-number';
+                groupNumber.textContent = col;
+
+                let row = 1;
+
+                if (col >= 2 && col <= 12) {
+                    if (col === 2) {
+                        row = 2;
+                    } else {
+                        row = 4;
+                    }
+                } else if (col >= 13 && col <= 17) {
+                    row = 2;
+                }
+
+                groupNumber.style.gridRow = row.toString();
+                groupNumber.style.gridColumn = (col + 1).toString();
+                table.appendChild(groupNumber);
+            }
+
+            for (let row = 1; row <= 7; row++) {
+                const periodNumber = document.createElement('div');
+                periodNumber.className = 'period-number';
+                periodNumber.style.gridColumn = '1';
+                periodNumber.style.gridRow = (row + 1).toString();
+                periodNumber.textContent = row;
+                table.appendChild(periodNumber);
+            }
+
+            elements.forEach(element => {
+                if (positions[element.number]) {
+                    const [row, col] = positions[element.number];
+                    const elementDiv = createElementDiv(element, row + 1, col);
+                    table.appendChild(elementDiv);
+                }
+            });
+
+            const lanthanidePlaceholder = document.createElement('div');
+            lanthanidePlaceholder.className = 'series-placeholder';
+            lanthanidePlaceholder.style.gridRow = '7';
+            lanthanidePlaceholder.style.gridColumn = '4 / span 15';
+            lanthanidePlaceholder.textContent = 'Lantanídeos (57-71)';
+            table.appendChild(lanthanidePlaceholder);
+
+            const actinidePlaceholder = document.createElement('div');
+            actinidePlaceholder.className = 'series-placeholder';
+            actinidePlaceholder.style.gridRow = '8';
+            actinidePlaceholder.style.gridColumn = '4 / span 15';
+            actinidePlaceholder.textContent = 'Actinídeos (89-103)';
+            table.appendChild(actinidePlaceholder);
+
+            const enlargedContainer = document.createElement('div');
+            enlargedContainer.id = 'enlarged-element-container';
+            enlargedContainer.className = 'enlarged-element-container';
+            enlargedContainer.style.gridRow = '2 / span 2';
+            enlargedContainer.style.gridColumn = '4 / span 2';
+            table.appendChild(enlargedContainer);
+
+            const hydrogen = elements.find(e => e.number === 1);
+            if (hydrogen) {
+                updateEnlargedElement(hydrogen);
+            }
+        }
+
+        function createLanthanidesActinides() {
+            const container = document.getElementById('lanthanides-actinides');
+            container.innerHTML = '';
+
+            const lanthanideElements = elements.filter(e => lanthanides.includes(e.number))
+                .sort((a, b) => a.number - b.number);
+
+            lanthanideElements.forEach((element, index) => {
+                const elementDiv = createElementDiv(element, 1, index + 1);
+                container.appendChild(elementDiv);
+            });
+
+            const actinideElements = elements.filter(e => actinides.includes(e.number))
+                .sort((a, b) => a.number - b.number);
+
+            actinideElements.forEach((element, index) => {
+                const elementDiv = createElementDiv(element, 2, index + 1);
+                container.appendChild(elementDiv);
+            });
+        }
+
+        function createElementDiv(element, row, col) {
+            const elementDiv = document.createElement('div');
+            elementDiv.className = `element ${element.category} ${element.state}`;
+            elementDiv.style.gridRow = row;
+            elementDiv.style.gridColumn = col;
+            elementDiv.dataset.number = element.number;
+
+            elementDiv.innerHTML = `
+                <span class="number">${element.number}</span>
+                <span class="symbol">${element.symbol}</span>
+                <span class="name">${element.name}</span>
+            `;
+
+            let hoverTimeout;
+
+            elementDiv.addEventListener('mouseenter', (e) => {
+                if (!lockedElement) {
+                    hoverTimeout = setTimeout(() => {
+                        hoveredElement = element;
+                        updateEnlargedElement(element);
+                        showElementDetails(element, e);
+                    }, 100);
+                }
+            });
+
+            elementDiv.addEventListener('mouseleave', () => {
+                clearTimeout(hoverTimeout);
+                if (!lockedElement && hoveredElement === element) {
+                    hoveredElement = null;
+                    const hydrogen = elements.find(e => e.number === 1);
+                    if (hydrogen) {
+                        updateEnlargedElement(hydrogen);
+                    }
+                    hideElementDetails();
+                }
+            });
+
+            elementDiv.addEventListener('click', (e) => {
+                clearTimeout(hoverTimeout);
+                if (lockedElement && lockedElement.number === element.number) {
+                    lockedElement = null;
+                    hideElementDetails();
+                    elementDiv.classList.remove('locked');
+                } else {
+                    document.querySelectorAll('.element.locked').forEach(el => {
+                        el.classList.remove('locked');
+                    });
+
+                    lockedElement = element;
+                    selectedElement = element;
+                    updateEnlargedElement(element);
+                    showElementDetails(element, e);
+                    elementDiv.classList.add('locked');
+                    highlightSelectedElement();
+                }
+            });
+
+            return elementDiv;
+        }
+
+        function updateEnlargedElement(element) {
+            const enlargedContainer = document.getElementById('enlarged-element-container');
+            enlargedContainer.innerHTML = '';
+
+            const enlargedElement = document.createElement('div');
+            enlargedElement.className = `enlarged-element ${element.category} ${element.state}`;
+
+            enlargedElement.innerHTML = `
+                <span class="number">${element.number}</span>
+                <span class="symbol">${element.symbol}</span>
+                <span class="name">${element.name}</span>
+                <span class="mass">${element.mass}</span>
+                <div class="enlarged-element-info">
+                    <div class="info-item" data-target="number"> - Número Atômico</div>
+                    <div class="info-item" data-target="symbol"> - Símbolo</div>
+                    <div class="info-item" data-target="name"> - Nome</div>
+                    <div class="info-item" data-target="mass"> - Massa Atômica</div>
+                </div>
+                <div class="element-legend">
+                    <div class="legend-item"><span class="legend-color legend-metais-alcalinos"></span>Metais Alcalinos</div>
+                    <div class="legend-item"><span class="legend-color legend-alcalino-terrosos"></span>Alcalino-Terrosos</div>
+                    <div class="legend-item"><span class="legend-color legend-transicao"></span>Metais de Transição</div>
+                    <div class="legend-item"><span class="legend-color legend-pos-transicao"></span>Pós-Transição</div>
+                    <div class="legend-item"><span class="legend-color legend-metaloides"></span>Semimetais</div>
+                    <div class="legend-item"><span class="legend-color legend-nao-metais"></span>Não Metais</div>
+                    <div class="legend-item"><span class="legend-color legend-gases-nobres"></span>Gases Nobres</div>
+                    <div class="legend-item"><span class="legend-color legend-lantanideos"></span>Lantanídeos</div>
+                    <div class="legend-item"><span class="legend-color legend-actinideos"></span>Actinídeos</div>
+                    <div class="legend-item"><span class="legend-color legend-desconhecidos"></span>Desconhecidos</div>
+                </div>
+            `;
+
+            const infoItems = enlargedElement.querySelectorAll('.info-item');
+            infoItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    const target = item.getAttribute('data-target');
+                    highlightElementInfo(target);
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    removeHighlight();
+                });
+            });
+
+            enlargedContainer.appendChild(enlargedElement);
+        }
+
+        function highlightElementInfo(target) {
+            const enlargedElement = document.querySelector('.enlarged-element');
+            if (!enlargedElement) return;
+
+            removeHighlight();
+
+            const elementToHighlight = enlargedElement.querySelector(`.${target}`);
+            if (elementToHighlight) {
+                elementToHighlight.classList.add('highlighted');
+            }
+        }
+
+        function removeHighlight() {
+            const highlightedElements = document.querySelectorAll('.highlighted');
+            highlightedElements.forEach(el => {
+                el.classList.remove('highlighted');
+            });
+        }
+
+        function showElementDetails(element, event) {
+            if (!element) return;
+
+            const details = document.getElementById('element-details');
+
+            document.getElementById('detail-title').textContent = element.name;
+            document.getElementById('detail-number').textContent = element.number;
+            document.getElementById('detail-symbol').textContent = element.symbol;
+            document.getElementById('detail-mass').textContent = element.mass;
+            document.getElementById('detail-melt').textContent = element.melt;
+            document.getElementById('detail-boil').textContent = element.boil;
+            document.getElementById('detail-density').textContent = element.density;
+            document.getElementById('detail-electronegativity').textContent = element.electronegativity;
+            document.getElementById('detail-electronAffinity').textContent = element.electronAffinity;
+            document.getElementById('detail-ionizationEnergy').textContent = element.ionizationEnergy;
+            document.getElementById('detail-atomicRadius').textContent = element.atomicRadius;
+            document.getElementById('detail-thermalConductivity').textContent = element.thermalConductivity;
+            document.getElementById('detail-electricalConductivity').textContent = element.electricalConductivity;
+            document.getElementById('detail-specificHeat').textContent = element.specificHeat;
+            document.getElementById('detail-category').textContent = getCategoryName(element.category);
+            document.getElementById('detail-state').textContent = getStateName(element.state);
+            document.getElementById('detail-electron').textContent = element.electron;
+            document.getElementById('detail-discoveryYear').textContent = element.discoveryYear;
+            document.getElementById('detail-discoveredBy').textContent = element.discoveredBy;
+
+            let targetElement = event.target;
+
+            while (targetElement && !targetElement.classList.contains('element')) {
+                targetElement = targetElement.parentElement;
+            }
+
+            if (!targetElement) {
+                targetElement = document.querySelector(`.element[data-number="${element.number}"]`);
+            }
+
+            if (targetElement && targetElement.getBoundingClientRect) {
+                const elementRect = targetElement.getBoundingClientRect();
+                const detailsWidth = 600;
+                const detailsHeight = 375;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const scrollX = window.scrollX || window.pageXOffset;
+                const scrollY = window.scrollY || window.pageYOffset;
+
+                let left = elementRect.right + scrollX + 10;
+                let top = elementRect.top + scrollY;
+
+                if (left + detailsWidth > viewportWidth + scrollX) {
+                    left = elementRect.left + scrollX - detailsWidth - 10;
+
+                    if (left < scrollX) {
+                        left = scrollX + 10;
+                    }
+                }
+
+                if (top + detailsHeight > viewportHeight + scrollY) {
+                    top = elementRect.top + scrollY - detailsHeight - 10;
+
+                    if (top < scrollY) {
+                        top = scrollY + 10;
+                    }
+                }
+
+                left = Math.max(scrollX + 10, Math.min(left, scrollX + viewportWidth - detailsWidth - 10));
+                top = Math.max(scrollY + 10, Math.min(top, scrollY + viewportHeight - detailsHeight - 10));
+
+                details.style.left = `${left}px`;
+                details.style.top = `${top}px`;
+                details.style.transform = 'none';
+            }
+
+            details.style.display = 'block';
+        }
+
+        function hideElementDetails() {
+            document.getElementById('element-details').style.display = 'none';
+        }
+
+        function getCategoryName(category) {
+            const categories = {
+                'metais-alcalinos': 'Metal Alcalino',
+                'alcalino-terrosos': 'Metal Alcalino-Terroso',
+                'transicao': 'Metal de Transição',
+                'pos-transicao': 'Metal Pós-Transição',
+                'metaloides': 'Semimetal',
+                'nao-metais': 'Não Metal',
+                'halogen': 'Halogênio',
+                'gases-nobres': 'Gás Nobre',
+                'lantanideos': 'Lantanídeo',
+                'actinideos': 'Actinídeo',
+                'desconhecidos': 'Propriedades Desconhecidas'
+            };
+            return categories[category] || category;
+        }
+
+        function getStateName(state) {
+            const states = {
+                'solid': 'Sólido',
+                'liquid': 'Líquido',
+                'gas': 'Gasoso'
+            };
+            return states[state] || state;
+        }
+
+        // Funções para navegação por teclado
+        function enableKeyboardNavigation() {
+            document.addEventListener('keydown', handleKeyPress);
+            keyboardNavigationEnabled = true;
+
+            if (!selectedElement) {
+                selectedElement = elements.find(e => e.number === 1) || elements[0];
+                highlightSelectedElement();
+
+                const elementDiv = document.querySelector(`.element[data-number="${selectedElement.number}"]`);
+                if (elementDiv) {
+                    showElementDetails(selectedElement, { target: elementDiv });
+                }
+            }
+        }
+
+        function disableKeyboardNavigation() {
+            document.removeEventListener('keydown', handleKeyPress);
+        }
+
+        function handleKeyPress(e) {
+            if (!keyboardNavigationEnabled || isChatView || isQuizView) return;
+
+            if (!selectedElement) {
+                selectedElement = elements.find(e => e.number === 1) || elements[0];
+                highlightSelectedElement();
+                showElementDetails(selectedElement, { target: document.querySelector(`.element[data-number="${selectedElement.number}"]`) });
+                return;
+            }
+
+            let newNumber = null;
+
+            switch (e.key) {
+                case 'ArrowUp':
+                    newNumber = findElementInDirection(selectedElement.number, 'up');
+                    break;
+                case 'ArrowDown':
+                    newNumber = findElementInDirection(selectedElement.number, 'down');
+                    break;
+                case 'ArrowLeft':
+                    newNumber = findElementInDirection(selectedElement.number, 'left');
+                    break;
+                case 'ArrowRight':
+                    newNumber = findElementInDirection(selectedElement.number, 'right');
+                    break;
+                case 'Enter':
+                    if (selectedElement) {
+                        lockedElement = selectedElement;
+                        updateEnlargedElement(selectedElement);
+                        const elementDiv = document.querySelector(`.element[data-number="${selectedElement.number}"]`);
+                        if (elementDiv) {
+                            showElementDetails(selectedElement, { target: elementDiv });
+                        }
+                    }
+                    break;
+                case 'Escape':
+                    lockedElement = null;
+                    hideElementDetails();
+                    document.querySelectorAll('.element.locked').forEach(el => {
+                        el.classList.remove('locked');
+                    });
+                    break;
+            }
+
+            if (newNumber) {
+                selectedElement = elements.find(el => el.number === newNumber);
+                highlightSelectedElement();
+
+                const elementDiv = document.querySelector(`.element[data-number="${selectedElement.number}"]`);
+                if (elementDiv) {
+                    showElementDetails(selectedElement, { target: elementDiv });
+                }
+            }
+        }
+
+        function findElementInDirection(currentNumber, direction) {
+            const currentElement = elements.find(e => e.number === currentNumber);
+            if (!currentElement) return null;
+
+            const isLanthanide = lanthanides.includes(currentNumber);
+            const isActinide = actinides.includes(currentNumber);
+
+            if (isLanthanide || isActinide) {
+                const series = isLanthanide ? lanthanides : actinides;
+                const currentIndex = series.indexOf(currentNumber);
+
+                switch (direction) {
+                    case 'left':
+                        if (currentIndex > 0) return series[currentIndex - 1];
+                        break;
+                    case 'right':
+                        if (currentIndex < series.length - 1) return series[currentIndex + 1];
+                        break;
+                    case 'up':
+                        if (isLanthanide) return 71;
+                        if (isActinide) return 103;
+                        break;
+                    case 'down':
+                        break;
+                }
+                return null;
+            }
+
+            const currentPos = positions[currentNumber];
+            if (!currentPos) return null;
+
+            let targetRow = currentPos[0];
+            let targetColumn = currentPos[1];
+
+            switch (direction) {
+                case 'up':
+                    targetRow--;
+                    break;
+                case 'down':
+                    targetRow++;
+                    if (targetRow === 9) return lanthanides[0];
+                    if (targetRow === 10) return actinides[0];
+                    break;
+                case 'left':
+                    targetColumn--;
+                    break;
+                case 'right':
+                    targetColumn++;
+                    break;
+            }
+
+            for (let number in positions) {
+                const pos = positions[number];
+                if (pos[0] === targetRow && pos[1] === targetColumn) {
+                    return parseInt(number);
+                }
+            }
+
+            return null;
+        }
+
+        function highlightSelectedElement() {
+            document.querySelectorAll('.element.keyboard-selected').forEach(el => {
+                el.classList.remove('keyboard-selected');
+            });
+
+            if (selectedElement) {
+                const elementDiv = document.querySelector(`.element[data-number="${selectedElement.number}"]`);
+                if (elementDiv) {
+                    elementDiv.classList.add('keyboard-selected');
+
+                    elementDiv.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'center'
+                    });
+
+                    updateEnlargedElement(selectedElement);
+                }
+            }
+        }
+
+        // Função para esconder detalhes ao clicar fora
+        function setupClickOutsideToClose() {
+            document.addEventListener('click', function (e) {
+                const details = document.getElementById('element-details');
+                const isClickInsideDetails = details.contains(e.target);
+                const isClickOnElement = e.target.closest('.element');
+
+                if (!isClickInsideDetails && !isClickOnElement && details.style.display === 'block') {
+                    lockedElement = null;
+                    hideElementDetails();
+
+                    document.querySelectorAll('.element.locked').forEach(el => {
+                        el.classList.remove('locked');
+                    });
+                }
+            });
+        }
+
+        // Funções para o modal de configuração da API
+        function setupApiModal() {
+            const modal = document.getElementById('apiModal');
+            const btn = document.getElementById('apiConfigBtn');
+            const span = document.getElementsByClassName('close')[0];
+            const saveBtn = document.getElementById('saveApiKey');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const apiStatus = document.getElementById('apiStatus');
+
+            if (userApiKey) {
+                apiKeyInput.value = userApiKey;
+            }
+
+            btn.onclick = function () {
+                modal.style.display = 'block';
+            }
+
+            span.onclick = function () {
+                modal.style.display = 'none';
+            }
+
+            saveBtn.onclick = function () {
+                const key = apiKeyInput.value.trim();
+                if (key) {
+                    userApiKey = key;
+                    localStorage.setItem('atomichat_api_key', key);
+                    apiStatus.textContent = 'Chave API salva com sucesso!';
+                    apiStatus.className = 'api-status success';
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                    }, 1500);
+                } else {
+                    apiStatus.textContent = 'Por favor, insira uma chave API válida.';
+                    apiStatus.className = 'api-status error';
+                }
+            }
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                createPeriodicTable();
+                createLanthanidesActinides();
+                loadChatsFromLocalStorage();
+                setupApiModal();
+                setupClickOutsideToClose();
+
+                const input = document.getElementById('perguntaInput');
+                input.addEventListener('input', function () {
+                    adjustTextareaHeight(this);
+                });
+
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const question = this.value.trim();
+                        if (question) {
+                            sendMessage(question);
+                        }
+                    }
+                });
+
+                const inputBottom = document.getElementById('perguntaInputBottom');
+                inputBottom.addEventListener('input', function () {
+                    adjustTextareaHeight(this);
+                    document.getElementById('submitBtnBottom').disabled = this.value.trim() === '';
+                });
+
+                inputBottom.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const question = this.value.trim();
+                        if (question) {
+                            sendMessage(question, true);
+                        }
+                    }
+                });
+
+                document.getElementById('chatForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const question = input.value.trim();
+                    if (question) {
+                        sendMessage(question);
+                    }
+                });
+
+                document.getElementById('chatFormBottom').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const question = inputBottom.value.trim();
+                    if (question) {
+                        sendMessage(question, true);
+                    }
+                });
+
+                document.getElementById('toggleViewBtn').addEventListener('click', toggleView);
+
+                document.getElementById('perguntaInput').addEventListener('focus', () => {
+                    document.getElementById('searchHistory').style.display = 'block';
+                });
+
+                document.getElementById('confirmAnswerBtn').addEventListener('click', checkAnswer);
+                document.getElementById('nextQuestionBtn').addEventListener('click', nextQuestion);
+                document.getElementById('backToTableBtn').addEventListener('click', toggleView);
+                document.getElementById('newQuizBtn').addEventListener('click', startQuiz);
+
+                document.addEventListener('click', (e) => {
+                    const searchHistory = document.getElementById('searchHistory');
+                    const headerSearch = document.getElementById('headerSearch');
+                    const perguntaInput = document.getElementById('perguntaInput');
+
+                    if (!e.target.closest('.header-search-container') &&
+                        !e.target.closest('.search-history') &&
+                        e.target !== perguntaInput) {
+                        searchHistory.style.display = 'none';
+                    }
+
+                    if (isChatView &&
+                        !e.target.closest('#headerSearch') &&
+                        e.target !== document.getElementById('newChatBtn')) {
+                        hideHeaderSearchInChat();
+                    }
+                });
+
+                // Ativar navegação por teclado IMEDIATAMENTE
+                enableKeyboardNavigation();
+
+                // Selecionar e mostrar o primeiro elemento automaticamente
+                selectedElement = elements.find(e => e.number === 1) || elements[0];
+                highlightSelectedElement();
+
+                // Mostrar detalhes do elemento inicial
+                const elementDiv = document.querySelector(`.element[data-number="${selectedElement.number}"]`);
+                if (elementDiv) {
+                    showElementDetails(selectedElement, { target: elementDiv });
+                }
+
+            } catch (error) {
+                console.error('Erro ao inicializar:', error);
+                alert('Erro ao carregar a aplicação. Verifique o console para mais detalhes.');
+            }
+        });
+    </script>
+</body>
+
+</html>
